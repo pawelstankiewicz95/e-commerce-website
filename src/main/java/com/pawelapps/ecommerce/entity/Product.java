@@ -5,7 +5,7 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "product")
@@ -13,6 +13,7 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Product implements Serializable {
 
@@ -44,10 +45,10 @@ public class Product implements Serializable {
     private int unitsInStock;
 
     @Column(name = "date_created")
-    private Date dateCreated;
+    private LocalDateTime dateCreated;
 
     @Column(name = "last_update")
-    private Date lastUpdated;
+    private LocalDateTime lastUpdated;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
