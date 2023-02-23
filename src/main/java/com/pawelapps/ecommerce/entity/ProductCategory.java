@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -26,4 +27,12 @@ public class ProductCategory implements Serializable {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "productCategory")
     private Set<Product> products;
+
+    public void addProduct(Product tempProduct) {
+        if (products == null) {
+            products = new HashSet<Product>();
+        }
+        tempProduct.setProductCategory(this);
+        products.add(tempProduct);
+    }
 }
