@@ -51,6 +51,8 @@ public class Product implements Serializable {
     private LocalDateTime lastUpdated;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id")
     private ProductCategory productCategory;
+
+
 }
