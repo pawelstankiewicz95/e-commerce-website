@@ -3,6 +3,7 @@ package com.pawelapps.ecommerce;
 import com.pawelapps.ecommerce.dao.ProductRepository;
 import com.pawelapps.ecommerce.entity.Product;
 import com.pawelapps.ecommerce.entity.ProductCategory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -19,12 +20,13 @@ class ProductRepositoryTest {
 
     @Autowired
     ProductRepository productRepository;
+    ProductCategory productCategory;
+    Product product;
 
-    @Test
-    void saveProductTest(){
-
-        ProductCategory productCategory = ProductCategory.builder().categoryName("Book").build();
-        Product product = Product.builder()
+    @BeforeEach
+    void setUpDataBase(){
+        productCategory = ProductCategory.builder().categoryName("Book").build();
+        product = Product.builder()
                 .sku("123456")
                 .name("Cup")
                 .description("Just testing cup")
@@ -36,9 +38,11 @@ class ProductRepositoryTest {
                 .lastUpdated(LocalDateTime.now())
                 .productCategory(productCategory)
                 .build();
+    }
+
+    @Test
+    void saveProductTest(){
         productRepository.save(product);
         assertTrue(product.getId() > 0, "should be greater than 0");
-
-
     }
 }
