@@ -30,10 +30,10 @@ class ProductRepositoryTest {
 
     @BeforeEach
     void setUpDataBase() {
-        productCategory = ProductCategory.builder().categoryName("Book").build();
+        productCategory = ProductCategory.builder().categoryName("Cup").build();
         product = Product.builder()
                 .sku("123456")
-                .name("Cup")
+                .name("TestCup")
                 .description("Just testing cup")
                 .unitPrice(BigDecimal.valueOf(24.35))
                 .imageUrl("www.test.com")
