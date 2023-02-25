@@ -52,4 +52,11 @@ class ProductRepositoryTest {
         productRepository.save(product);
         assertTrue(product.getId() > 0, "should be greater than 0");
     }
+
+    @Test
+    void getProductTest() {
+        Product tempProduct = productRepository.findById(Long.valueOf(1)).get();
+        assertTrue(product.equals(tempProduct), "Should be the same");
+        assertEquals("123456", tempProduct.getSku());
+    }
 }
