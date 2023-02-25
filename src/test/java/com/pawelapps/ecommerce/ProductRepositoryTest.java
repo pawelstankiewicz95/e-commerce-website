@@ -67,4 +67,14 @@ class ProductRepositoryTest {
         List<Product> products = productRepository.findAll();
         assertTrue(products.size() > 0, "Should be greater than zero");
     }
+
+    @Test
+    void updateProductTest(){
+        Product productFromDataBase = productRepository.findById(Long.valueOf(1)).get();
+        productFromDataBase.setName("updated Cup");
+        Product updatedProduct = productRepository.save(productFromDataBase);
+
+        assertEquals(productFromDataBase.getId(), updatedProduct.getId(), "id's should be the same");
+        assertEquals(updatedProduct.getName(), "updated Cup", "product names should be the same");
+    }
 }
