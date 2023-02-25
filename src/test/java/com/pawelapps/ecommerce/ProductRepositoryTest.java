@@ -58,7 +58,7 @@ class ProductRepositoryTest {
 
     @Test
     void getProductTest() {
-        Product tempProduct = productRepository.findById(Long.valueOf(1)).get();
+        Product tempProduct = productRepository.findById(1L).get();
         assertTrue(product.equals(tempProduct), "Objects should be the same");
         assertEquals("123456", tempProduct.getSku());
     }
@@ -71,7 +71,7 @@ class ProductRepositoryTest {
 
     @Test
     void updateProductTest(){
-        Product productFromDataBase = productRepository.findById(Long.valueOf(1)).get();
+        Product productFromDataBase = productRepository.findById(1L).get();
         productFromDataBase.setName("updated Cup");
         Product updatedProduct = productRepository.save(productFromDataBase);
 
@@ -81,7 +81,7 @@ class ProductRepositoryTest {
 
     @Test
     void deleteProductTest(){
-        Product tempProduct = productRepository.findById(Long.valueOf(1)).get();
+        Product tempProduct = productRepository.findById(1L).get();
         productRepository.delete(tempProduct);
         Optional<Product> optionalProduct = productRepository.findById(Long.valueOf(1));
 
