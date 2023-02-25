@@ -52,20 +52,20 @@ class ProductRepositoryTest {
     @Test
     void saveProductTest() {
         productRepository.save(product);
-        assertTrue(product.getId() > 0, "should be greater than 0");
+        assertTrue(product.getId() > 0, "Id should be greater than 0");
     }
 
     @Test
     void getProductTest() {
         Product tempProduct = productRepository.findById(Long.valueOf(1)).get();
-        assertTrue(product.equals(tempProduct), "Should be the same");
+        assertTrue(product.equals(tempProduct), "Objects should be the same");
         assertEquals("123456", tempProduct.getSku());
     }
 
     @Test
     void getProductsTest(){
         List<Product> products = productRepository.findAll();
-        assertTrue(products.size() > 0, "Should be greater than zero");
+        assertTrue(products.size() > 0, "List should be greater than zero");
     }
 
     @Test
@@ -74,7 +74,7 @@ class ProductRepositoryTest {
         productFromDataBase.setName("updated Cup");
         Product updatedProduct = productRepository.save(productFromDataBase);
 
-        assertEquals(productFromDataBase.getId(), updatedProduct.getId(), "id's should be the same");
-        assertEquals(updatedProduct.getName(), "updated Cup", "product names should be the same");
+        assertEquals(productFromDataBase.getId(), updatedProduct.getId(), "Id's should be the same");
+        assertEquals(updatedProduct.getName(), "updated Cup", "Product names should be the same");
     }
 }
