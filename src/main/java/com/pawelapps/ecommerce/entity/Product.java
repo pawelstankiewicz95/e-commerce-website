@@ -50,7 +50,7 @@ public class Product implements Serializable {
     @Column(name = "last_update")
     private LocalDateTime lastUpdated;
 
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "category_id")
     private ProductCategory productCategory;
 
