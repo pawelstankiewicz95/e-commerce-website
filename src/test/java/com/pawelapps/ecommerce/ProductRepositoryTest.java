@@ -12,6 +12,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -44,6 +45,7 @@ class ProductRepositoryTest {
                 .productCategory(productCategory)
                 .build();
         entityManager.persist(product);
+        entityManager.flush();
 
     }
 
@@ -58,5 +60,11 @@ class ProductRepositoryTest {
         Product tempProduct = productRepository.findById(Long.valueOf(1)).get();
         assertTrue(product.equals(tempProduct), "Should be the same");
         assertEquals("123456", tempProduct.getSku());
+    }
+
+    @Test
+    void getProductsTest(){
+        List<Product> products = productRepository.findAll();
+        assertTrue(products.size() > 0, "Should be greater than zero");
     }
 }
