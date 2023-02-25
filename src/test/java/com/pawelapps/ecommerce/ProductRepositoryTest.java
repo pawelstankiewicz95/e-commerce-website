@@ -13,6 +13,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -76,5 +77,14 @@ class ProductRepositoryTest {
 
         assertEquals(productFromDataBase.getId(), updatedProduct.getId(), "Id's should be the same");
         assertEquals(updatedProduct.getName(), "updated Cup", "Product names should be the same");
+    }
+
+    @Test
+    void deleteProductTest(){
+        Product tempProduct = productRepository.findById(Long.valueOf(1)).get();
+        productRepository.delete(tempProduct);
+        Optional<Product> optionalProduct = productRepository.findById(Long.valueOf(1));
+
+        assertTrue(optionalProduct.isEmpty(), "Optional product should be empty");
     }
 }
