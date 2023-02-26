@@ -46,8 +46,14 @@ public class ProductCategoryRepositoryTest {
                 .build();
         productCategory = ProductCategory.builder().categoryName("Cup").build();
         productCategory.addProduct(product);
-        entityManager.persist(product);
+        entityManager.persist(productCategory);
         entityManager.flush();
+    }
+
+    @Test
+    void saveProductTest() {
+        productCategoryRepository.save(productCategory);
+        assertTrue(productCategory.getId() > 0, "Id should be greater than 0");
     }
 
     @Test
