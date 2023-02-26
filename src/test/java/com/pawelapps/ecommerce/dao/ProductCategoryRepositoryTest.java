@@ -3,7 +3,6 @@ package com.pawelapps.ecommerce.dao;
 import com.pawelapps.ecommerce.entity.Product;
 import com.pawelapps.ecommerce.entity.ProductCategory;
 import jakarta.persistence.EntityManager;
-import jdk.jfr.Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @TestPropertySource("/test-application.properties")
@@ -55,5 +54,15 @@ public class ProductCategoryRepositoryTest {
     void getCategoriesTest() {
         List<ProductCategory> categories = productCategoryRepository.findAll();
         assertFalse(categories.isEmpty(), "List should not be empty");
+    }
+
+    @Test
+
+    void getCategoryTest() {
+        ProductCategory productCategoryFromDatabase = productCategoryRepository.findById(1L).orElse(null);
+        if (productCategoryFromDatabase != null) {
+            assertEquals(productCategory, productCategoryFromDatabase, "Objects should be the same");
+            assertEquals("Cup", productCategoryFromDatabase.getCategoryName());
+        } else fail("Object should not be null");
     }
 }
