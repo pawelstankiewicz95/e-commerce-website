@@ -69,7 +69,7 @@ class ProductRepositoryTest {
     @Test
     void getProductsTest() {
         List<Product> products = productRepository.findAll();
-        assertTrue(products.size() > 0, "List should be greater than zero");
+        assertFalse(products.isEmpty(), "List should not be empty");
     }
 
     @Test
@@ -96,7 +96,7 @@ class ProductRepositoryTest {
     }
 
     @Test
-    void findByName(){
+    void findByName() {
         List<Product> products = productRepository.findByName("TestCup");
         assertFalse(products.isEmpty(), "list should not be empty");
     }
