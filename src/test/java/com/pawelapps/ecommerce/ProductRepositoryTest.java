@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @TestPropertySource("/test-application.properties")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ProductRepositoryTest {
 
     @Autowired
@@ -47,7 +49,6 @@ class ProductRepositoryTest {
                 .build();
         entityManager.persist(product);
         entityManager.flush();
-
     }
 
     @Test
@@ -58,33 +59,39 @@ class ProductRepositoryTest {
 
     @Test
     void getProductTest() {
-        Product tempProduct = productRepository.findById(1L).get();
-        assertTrue(product.equals(tempProduct), "Objects should be the same");
-        assertEquals("123456", tempProduct.getSku());
+        Product productFromDataBase = productRepository.findById(1L).orElse(null);
+        if (productFromDataBase != null) {
+            assertEquals(product, productFromDataBase, "Objects should be the same");
+            assertEquals("123456", productFromDataBase.getSku());
+        } else fail("Object should not be null");
     }
 
     @Test
-    void getProductsTest(){
+    void getProductsTest() {
         List<Product> products = productRepository.findAll();
         assertTrue(products.size() > 0, "List should be greater than zero");
     }
 
     @Test
-    void updateProductTest(){
-        Product productFromDataBase = productRepository.findById(1L).get();
-        productFromDataBase.setName("updated Cup");
-        Product updatedProduct = productRepository.save(productFromDataBase);
+    void updateProductTest() {
+        Product productFromDataBase = productRepository.findById(1L).orElse(null);
+        if (productFromDataBase != null) {
+            productFromDataBase.setName("updated Cup");
+            Product updatedProduct = productRepository.save(productFromDataBase);
 
-        assertEquals(productFromDataBase.getId(), updatedProduct.getId(), "Id's should be the same");
-        assertEquals(updatedProduct.getName(), "updated Cup", "Product names should be the same");
+            assertEquals(productFromDataBase.getId(), updatedProduct.getId(), "Id's should be the same");
+            assertEquals(updatedProduct.getName(), "updated Cup", "Product names should be the same");
+        } else fail("object should not be null");
     }
 
     @Test
-    void deleteProductTest(){
-        Product tempProduct = productRepository.findById(1L).get();
-        productRepository.delete(tempProduct);
-        Optional<Product> optionalProduct = productRepository.findById(Long.valueOf(1));
+    void deleteProductTest() {
+        Product productFromDataBase = productRepository.findById(1L).orElse(null);
+        if (productFromDataBase != null) {
+            productRepository.delete(productFromDataBase);
+            Optional<Product> optionalProduct = productRepository.findById(1L);
 
-        assertTrue(optionalProduct.isEmpty(), "Optional product should be empty");
+            assertTrue(optionalProduct.isEmpty(), "Optional product should be empty");
+        } else fail("object should not be null");
     }
 }
