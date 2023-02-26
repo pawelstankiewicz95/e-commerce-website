@@ -71,4 +71,16 @@ public class ProductCategoryRepositoryTest {
             assertEquals("Cup", productCategoryFromDatabase.getCategoryName());
         } else fail("Object should not be null");
     }
+
+    @Test
+    void updateProductCategoryTest() {
+        ProductCategory productCategoryFromDatabase = productCategoryRepository.findById(1L).orElse(null);
+        if (productCategoryFromDatabase != null) {
+            productCategoryFromDatabase.setCategoryName("updated category : Cup");
+            ProductCategory updatedProductCategory = productCategoryRepository.save(productCategoryFromDatabase);
+
+            assertEquals(productCategoryFromDatabase.getId(), updatedProductCategory.getId(), "Id's should be the same");
+            assertEquals(updatedProductCategory.getCategoryName(), "updated category : Cup", "Product names should be the same");
+        } else fail("object should not be null");
+    }
 }
