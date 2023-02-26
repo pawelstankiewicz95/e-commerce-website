@@ -3,7 +3,9 @@ package com.pawelapps.ecommerce.dao;
 import com.pawelapps.ecommerce.entity.Product;
 import com.pawelapps.ecommerce.entity.ProductCategory;
 import jakarta.persistence.EntityManager;
+import jdk.jfr.Category;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -11,6 +13,9 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @DataJpaTest
 @TestPropertySource("/test-application.properties")
@@ -44,5 +49,11 @@ public class ProductCategoryRepositoryTest {
         productCategory.addProduct(product);
         entityManager.persist(product);
         entityManager.flush();
+    }
+
+    @Test
+    void getCategoriesTest() {
+        List<ProductCategory> categories = productCategoryRepository.findAll();
+        assertFalse(categories.isEmpty(), "List should not be empty");
     }
 }
