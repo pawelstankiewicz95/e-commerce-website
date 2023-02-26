@@ -80,7 +80,7 @@ public class ProductCategoryRepositoryTest {
             ProductCategory updatedProductCategory = productCategoryRepository.save(productCategoryFromDatabase);
 
             assertEquals(productCategoryFromDatabase.getId(), updatedProductCategory.getId(), "Id's should be the same");
-            assertEquals(updatedProductCategory.getCategoryName(), "updated category : Cup", "Product names should be the same");
+            assertEquals(updatedProductCategory.getCategoryName(), "updated category : Cup", "Category names should be the same");
         } else fail("object should not be null");
     }
 }
