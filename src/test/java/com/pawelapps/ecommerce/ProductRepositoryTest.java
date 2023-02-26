@@ -94,4 +94,10 @@ class ProductRepositoryTest {
             assertTrue(optionalProduct.isEmpty(), "Optional product should be empty");
         } else fail("object should not be null");
     }
+
+    @Test
+    void findByName(){
+        List<Product> products = productRepository.findByName("TestCup");
+        assertFalse(products.isEmpty(), "list should not be empty");
+    }
 }
