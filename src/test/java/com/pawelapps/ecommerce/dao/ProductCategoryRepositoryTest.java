@@ -51,7 +51,7 @@ public class ProductCategoryRepositoryTest {
     }
 
     @Test
-    void saveProductTest() {
+    void saveProductCategoryTest() {
         productCategoryRepository.save(productCategory);
         assertTrue(productCategory.getId() > 0, "Id should be greater than 0");
     }
