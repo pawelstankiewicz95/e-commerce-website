@@ -27,6 +27,9 @@ class ProductRepositoryTest {
     EntityManager entityManager;
     @Autowired
     ProductRepository productRepository;
+
+    @Autowired
+    ProductCategoryRepository productCategoryRepository;
     ProductCategory productCategory;
     Product product;
 
@@ -90,8 +93,10 @@ class ProductRepositoryTest {
         if (productFromDataBase != null) {
             productRepository.delete(productFromDataBase);
             Optional<Product> optionalProduct = productRepository.findById(1L);
+            Optional<ProductCategory> optionalProductCategory = productCategoryRepository.findById(1L);
 
             assertTrue(optionalProduct.isEmpty(), "Optional product should be empty");
+            assertFalse(optionalProductCategory.isEmpty(), "Product category should not be deleted");
         } else fail("object should not be null");
     }
 
