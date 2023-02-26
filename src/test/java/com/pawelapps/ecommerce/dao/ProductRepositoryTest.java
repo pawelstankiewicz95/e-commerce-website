@@ -1,6 +1,5 @@
-package com.pawelapps.ecommerce;
+package com.pawelapps.ecommerce.dao;
 
-import com.pawelapps.ecommerce.dao.ProductRepository;
 import com.pawelapps.ecommerce.entity.Product;
 import com.pawelapps.ecommerce.entity.ProductCategory;
 import jakarta.persistence.EntityManager;

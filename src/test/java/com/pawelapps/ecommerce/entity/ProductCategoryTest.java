@@ -1,15 +1,13 @@
-package com.pawelapps.ecommerce;
+package com.pawelapps.ecommerce.entity;
 
-import com.pawelapps.ecommerce.entity.Product;
-import com.pawelapps.ecommerce.entity.ProductCategory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 class ProductCategoryTest {
