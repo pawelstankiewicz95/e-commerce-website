@@ -62,6 +62,7 @@ class ProductRepositoryTest {
         if (productFromDataBase != null) {
             assertEquals(product, productFromDataBase, "Objects should be the same");
             assertEquals("123456", productFromDataBase.getSku());
+            assertEquals(productCategory.getCategoryName(), "Cup", "Categories should be equal");
         } else fail("Object should not be null");
     }
 
