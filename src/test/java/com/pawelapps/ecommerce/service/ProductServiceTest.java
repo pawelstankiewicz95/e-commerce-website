@@ -13,6 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 
@@ -53,7 +54,14 @@ public class ProductServiceTest {
     @Test
     void createProductTest(){
         when(productRepository.save(any(Product.class))).thenReturn(product);
-        assertEquals(product, productService.createProduct(new Product()), "products should be equals");
+        assertEquals(product, productService.createProduct(new Product()), "product objects should be equal");
         verify(productRepository).save(any(Product.class));
+    }
+
+    @Test
+    void getProductByIdTest(){
+        when(productRepository.findById(anyLong())).thenReturn(Optional.ofNullable(product));
+        assertEquals(Optional.ofNullable(product), productService.getProductById(1L), "product objects should be equal");
+        verify(productRepository.findById(1L));
     }
 }
