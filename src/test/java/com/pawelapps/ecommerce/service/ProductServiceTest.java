@@ -52,7 +52,7 @@ public class ProductServiceTest {
 
     @Test
     void createProductTest(){
-        when(productService.createProduct(any(Product.class))).thenReturn(product);
+        when(productRepository.save(any(Product.class))).thenReturn(product);
         assertEquals(product, productService.createProduct(new Product()), "products should be equals");
         verify(productRepository).save(any(Product.class));
     }
