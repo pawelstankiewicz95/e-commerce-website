@@ -60,8 +60,8 @@ public class ProductServiceTest {
 
     @Test
     void getProductByIdTest(){
-        when(productRepository.findById(anyLong())).thenReturn(Optional.ofNullable(product));
-        assertEquals(Optional.ofNullable(product), productService.getProductById(1L), "product objects should be equal");
-        verify(productRepository.findById(1L));
+        when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
+        assertEquals(Optional.of(product), Optional.of(productService.getProductById(1L)), "product objects should be equal");
+        verify(productRepository).findById(1L);
     }
 }
