@@ -13,6 +13,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -31,8 +33,9 @@ public class ProductServiceTest {
     private ProductService productService;
 
     Product product;
-
     ProductCategory productCategory;
+    List<Product> products;
+
 
     @BeforeEach
     void setUp() {
@@ -63,5 +66,14 @@ public class ProductServiceTest {
         when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
         assertEquals(Optional.of(product), Optional.of(productService.getProductById(1L)), "product objects should be equal");
         verify(productRepository).findById(1L);
+    }
+
+    @Test
+    void getAllProducts(){
+        products = new ArrayList<>();
+        products.add(product);
+        when(productRepository.findAll()).thenReturn(products);
+        assertEquals(products.size(), productService.getAllProducts.size(), "array sizes should be equal");
+        verify(productRepository.findAll());
     }
 }
