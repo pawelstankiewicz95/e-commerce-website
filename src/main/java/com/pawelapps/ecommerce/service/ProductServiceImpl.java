@@ -6,6 +6,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @Transactional
 public class ProductServiceImpl implements ProductService{
@@ -21,5 +23,10 @@ public class ProductServiceImpl implements ProductService{
     public Product createProduct(Product product) {
         productRepository.save(product);
         return product;
+    }
+
+    @Override
+    public Product getProductById(Long id) {
+        return productRepository.findById(id).orElseThrow(new ProductNotFoundException("Product with id" + id + "doesn't exist"));
     }
 }
