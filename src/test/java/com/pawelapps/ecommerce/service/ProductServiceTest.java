@@ -76,4 +76,11 @@ public class ProductServiceTest {
         assertEquals(products.size(), productService.getAllProducts().size(), "list sizes should be equal");
         verify(productRepository).findAll();
     }
+
+    @Test
+    void updateProductTest(){
+        when(productRepository.save(any(Product.class))).thenReturn(product);
+        assertEquals(product, productService.updateProduct(new Product()), "product objects should be equal");
+        verify(productRepository).save(any(Product.class));
+    }
 }
