@@ -55,21 +55,21 @@ public class ProductServiceTest {
     }
 
     @Test
-    void createProductTest(){
+    void createProductTest() {
         when(productRepository.save(any(Product.class))).thenReturn(product);
         assertEquals(product, productService.createProduct(new Product()), "product objects should be equal");
         verify(productRepository).save(any(Product.class));
     }
 
     @Test
-    void getProductByIdTest(){
+    void getProductByIdTest() {
         when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
         assertEquals(Optional.of(product), Optional.of(productService.getProductById(1L)), "product objects should be equal");
         verify(productRepository).findById(1L);
     }
 
     @Test
-    void getAllProductsTest(){
+    void getAllProductsTest() {
         products = new ArrayList<>();
         products.add(product);
         when(productRepository.findAll()).thenReturn(products);
@@ -78,9 +78,16 @@ public class ProductServiceTest {
     }
 
     @Test
-    void updateProductTest(){
+    void updateProductTest() {
         when(productRepository.save(any(Product.class))).thenReturn(product);
         assertEquals(product, productService.updateProduct(new Product()), "product objects should be equal");
         verify(productRepository).save(any(Product.class));
+    }
+
+    @Test
+    void deleteProductByIdTest() {
+        doNothing().when(productRepository).deleteById(anyLong());
+        productService.deleteProductById(anyLong());
+        verify(productRepository).deleteById(anyLong());
     }
 }
