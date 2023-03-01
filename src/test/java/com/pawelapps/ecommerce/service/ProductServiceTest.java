@@ -69,11 +69,11 @@ public class ProductServiceTest {
     }
 
     @Test
-    void getAllProducts(){
+    void getAllProductsTest(){
         products = new ArrayList<>();
         products.add(product);
         when(productRepository.findAll()).thenReturn(products);
-        assertEquals(products.size(), productService.getAllProducts.size(), "array sizes should be equal");
-        verify(productRepository.findAll());
+        assertEquals(products.size(), productService.getAllProducts().size(), "list sizes should be equal");
+        verify(productRepository).findAll();
     }
 }
