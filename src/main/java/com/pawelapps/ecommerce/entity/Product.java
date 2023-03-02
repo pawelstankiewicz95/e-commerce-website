@@ -1,5 +1,6 @@
 package com.pawelapps.ecommerce.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -47,11 +48,12 @@ public class Product implements Serializable {
     @Column(name = "date_created")
     private LocalDateTime dateCreated;
 
-    @Column(name = "last_update")
+    @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
 
     @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "category_id")
+    @JsonManagedReference
     private ProductCategory productCategory;
 
 
