@@ -1,5 +1,6 @@
 package com.pawelapps.ecommerce.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,6 +28,7 @@ public class ProductCategory implements Serializable {
     private String categoryName;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "productCategory")
+    @JsonBackReference
     private Set<Product> products;
 
     public void addProduct(Product tempProduct) {
