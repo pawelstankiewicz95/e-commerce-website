@@ -1,5 +1,6 @@
 package com.pawelapps.ecommerce.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -53,7 +54,7 @@ public class Product implements Serializable {
 
     @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "category_id")
-    @JsonManagedReference
+    @JsonBackReference
     private ProductCategory productCategory;
 
 

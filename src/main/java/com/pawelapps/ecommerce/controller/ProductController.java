@@ -4,6 +4,7 @@ import com.pawelapps.ecommerce.entity.Product;
 import com.pawelapps.ecommerce.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +33,7 @@ public class ProductController {
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
 
-    @PostMapping("/products")
+    @PostMapping(value = "/products", consumes = "application/json;charset=UTF-8")
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
         Product newProduct = productService.createProduct(product);
         return new ResponseEntity<>(product, HttpStatus.CREATED);
