@@ -1,5 +1,6 @@
 package com.pawelapps.ecommerce.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pawelapps.ecommerce.entity.Product;
 import com.pawelapps.ecommerce.entity.ProductCategory;
 import jakarta.persistence.EntityManager;
@@ -33,12 +34,18 @@ public class ProductControllerTest {
     @PersistenceContext
     EntityManager entityManager;
 
+    @Autowired
+    ObjectMapper objectMapper;
+
     Product product;
 
     ProductCategory productCategory;
 
     @BeforeEach
     void setUpDataBase() {
+
+        productCategory = ProductCategory.builder().categoryName("Cup").build();
+
         product = Product.builder()
                 .sku("123456")
                 .name("TestCup")
@@ -75,6 +82,26 @@ public class ProductControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(2)));
+    }
+
+    @Test
+    void createProductTest() throws Exception {
+        product = Product.builder()
+                .sku("333222")
+                .name("New TestCup")
+                .description("Just new testing cup")
+                .unitPrice(BigDecimal.valueOf(15.45))
+                .imageUrl("www.newimage.com")
+                .active(true)
+                .unitsInStock(10)
+                .dateCreated(LocalDateTime.now())
+                .lastUpdated(LocalDateTime.now())
+                .productCategory(productCategory)
+                .build();
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(product)))
+                .andExpect(status().isCreated());
     }
 
 
