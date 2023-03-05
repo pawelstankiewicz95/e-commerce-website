@@ -103,13 +103,28 @@ public class ProductControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath(("$.sku"),is("333222")));
+                .andExpect(jsonPath(("$.sku"), is("333222")));
     }
 
     @Test
-    void updateProductTest(){
-
+    void updateProductTest() throws Exception {
+        product = Product.builder()
+                .id(1L)
+                .sku("333222")
+                .name("Updated Name")
+                .description("Just new updated cup")
+                .unitPrice(BigDecimal.valueOf(15.45))
+                .imageUrl("www.updatedimage.com")
+                .active(true)
+                .unitsInStock(10)
+                .dateCreated(LocalDateTime.now())
+                .lastUpdated(LocalDateTime.now())
+                .productCategory(productCategory)
+                .build();
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(product)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is("Updated Name")));
     }
-
-
 }
