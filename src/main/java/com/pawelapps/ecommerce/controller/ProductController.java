@@ -58,4 +58,9 @@ public class ProductController {
         return new ResponseEntity<>(productsByCategoryId, HttpStatus.OK);
     }
 
+    @GetMapping("/products/products-by-name-or-sku/{nameOrSku}")
+    public ResponseEntity<List<Product>> getProductsByNameLikeOrSkuLike(@PathVariable("nameOrSku") String nameOrSku){
+        List<Product> productsByNameOrSku = productService.getProductsByNameOrSku(nameOrSku);
+        return new ResponseEntity<>(productsByNameOrSku, HttpStatus.OK);
+    }
 }
