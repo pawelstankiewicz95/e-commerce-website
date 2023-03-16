@@ -90,4 +90,13 @@ public class ProductServiceTest {
         productService.deleteProductById(anyLong());
         verify(productRepository).deleteById(anyLong());
     }
+
+    @Test
+    void getProductsByNameLikeOrSkuLike() {
+        products = new ArrayList<>();
+        products.add(product);
+        when(productRepository.findByNameLikeOrSkuLike(anyString())).thenReturn(products);
+        assertEquals(products.size(), productService.getProductsByNameOrSku(anyString()).size(), "list sizes should be equal");
+        verify(productRepository).findByNameLikeOrSkuLike(anyString());
+    }
 }

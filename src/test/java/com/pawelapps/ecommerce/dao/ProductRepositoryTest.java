@@ -4,6 +4,8 @@ import com.pawelapps.ecommerce.entity.Product;
 import com.pawelapps.ecommerce.entity.ProductCategory;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -49,6 +51,7 @@ class ProductRepositoryTest {
                 .lastUpdated(LocalDateTime.now())
                 .productCategory(productCategory)
                 .build();
+        entityManager.persist(productCategory);
         entityManager.persist(product);
         entityManager.flush();
     }
@@ -104,5 +107,23 @@ class ProductRepositoryTest {
     void findByName() {
         List<Product> products = productRepository.findByName("TestCup");
         assertFalse(products.isEmpty(), "list should not be empty");
+    }
+
+    @Nested
+    @DisplayName("findByNameLikeOrSkuLike method")
+    class findByNameLikeOrSkuLikeTest {
+        @Test
+        @DisplayName("when finding by name")
+        void findByNameLikeTest() {
+            List<Product> products = productRepository.findByNameLikeOrSkuLike("est");
+            assertFalse(products.isEmpty(), "list should not be empty");
+        }
+
+        @Test
+        @DisplayName("when finding by sku")
+        void findBySkuLikeTest() {
+            List<Product> products = productRepository.findByNameLikeOrSkuLike("45");
+            assertFalse(products.isEmpty(), "list should not be empty");
+        }
     }
 }

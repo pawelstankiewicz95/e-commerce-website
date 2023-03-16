@@ -6,6 +6,8 @@ import com.pawelapps.ecommerce.entity.ProductCategory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -19,8 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -73,6 +74,7 @@ public class ProductControllerTest {
                 .productCategory(productCategory)
                 .build();
         entityManager.persist(product);
+        entityManager.persist(productCategory);
         entityManager.flush();
 
     }
@@ -126,5 +128,29 @@ public class ProductControllerTest {
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", is("Updated Name")));
+    }
+
+
+    @Nested
+    @DisplayName("getProductsByNameLikeOrSkuLike method")
+    class getProductsByNameOrSkuTest {
+        @Test
+        @DisplayName("when getting by name like")
+        void getProductsByName() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.get("/api/products/products-by-name-or-sku/Second"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$", hasSize(1)))
+                    .andExpect(jsonPath("$[0].name", is("Second TestCup")));
+        }
+        @Test
+        @DisplayName("when getting by sku like")
+        void getProductsBySku() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.get("/api/products/products-by-name-or-sku/34"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$", hasSize(1)))
+                    .andExpect(jsonPath("$[0].name", is("TestCup")));
+        }
     }
 }
