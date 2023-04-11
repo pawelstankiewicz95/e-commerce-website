@@ -39,7 +39,7 @@ public class Order {
     @JsonManagedReference
     private Set<OrderProduct> orderProducts = new HashSet<>();
 
-    public void addOrderItem(OrderProduct orderProduct) {
+    public void addOrderProduct(OrderProduct orderProduct) {
         if (orderProduct != null){
             if (orderProducts == null){
                 orderProducts = new HashSet<>();
