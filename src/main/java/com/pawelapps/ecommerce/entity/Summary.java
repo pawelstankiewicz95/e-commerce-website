@@ -17,10 +17,10 @@ public class Summary {
     private Long id;
 
     @Column(name = "total_price")
-    private int totalPrice;
+    private int totalCartValue;
 
     @Column(name = "total_quantity")
-    private int totalQuantity;
+    private int totalQuantityOfProducts;
 
     @OneToOne(mappedBy = "summary")
     private Order order;
