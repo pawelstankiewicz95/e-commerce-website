@@ -1,5 +1,7 @@
 package com.pawelapps.ecommerce.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,8 +22,9 @@ public class Order {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "customer_id", referencedColumnName = "id")
+    @JsonBackReference
     private Customer customer;
 
     @OneToOne(cascade = CascadeType.ALL)
@@ -33,15 +36,16 @@ public class Order {
     private Summary summary;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private Set<OrderItem> orderItems = new HashSet<>();
+    @JsonManagedReference
+    private Set<OrderProduct> orderProducts = new HashSet<>();
 
-    public void addOrderItem(OrderItem orderItem) {
-        if (orderItem != null){
-            if (orderItems == null){
-                orderItems = new HashSet<>();
+    public void addOrderItem(OrderProduct orderProduct) {
+        if (orderProduct != null){
+            if (orderProducts == null){
+                orderProducts = new HashSet<>();
             }
-            orderItem.setOrder(this);
-            orderItems.add(orderItem);
+            orderProduct.setOrder(this);
+            orderProducts.add(orderProduct);
         }
     }
 
