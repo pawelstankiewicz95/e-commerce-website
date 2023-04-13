@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "order_item")
 @Getter
@@ -27,7 +29,7 @@ public class OrderProduct {
     private String description;
 
     @Column(name = "unit_price")
-    private int unitPrice;
+    private BigDecimal unitPrice;
 
     @Column(name = "image_url")
     private String imageUrl;
