@@ -1,15 +1,15 @@
 package com.pawelapps.ecommerce.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "summary")
 @Setter
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Summary {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
