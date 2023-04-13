@@ -2,15 +2,17 @@ package com.pawelapps.ecommerce.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "order_item")
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class OrderProduct {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,7 +29,7 @@ public class OrderProduct {
     private String description;
 
     @Column(name = "unit_price")
-    private int unitPrice;
+    private BigDecimal unitPrice;
 
     @Column(name = "image_url")
     private String imageUrl;
