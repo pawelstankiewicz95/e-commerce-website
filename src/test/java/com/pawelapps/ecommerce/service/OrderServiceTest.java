@@ -16,8 +16,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -84,6 +84,7 @@ public class OrderServiceTest {
     @Test
     void saveOrderTest() {
         when(orderRepository.save(any(Order.class))).thenReturn(order);
-        assertEquals(order.getId(), orderService.saveOrder(orderDto).getId(),"IDs should be equal");
+        orderService.saveOrder(orderDto);
+        verify(orderRepository, description("orderRepository save method should be called.")).save(any(Order.class));
     }
 }
