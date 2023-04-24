@@ -18,7 +18,7 @@ public class User {
     @Column(name = "email")
     private String email;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "cart_id")
     private Cart cart;
 }
