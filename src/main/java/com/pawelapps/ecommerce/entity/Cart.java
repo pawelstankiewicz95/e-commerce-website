@@ -26,4 +26,14 @@ public class Cart {
     @OneToMany(mappedBy = "cart", cascade = CascadeType.REMOVE)
     @JsonManagedReference
     private Set<CartProduct> cartProducts = new HashSet<>();
+
+    public void addCartProduct(CartProduct cartProduct){
+        if (cartProduct != null){
+            if (cartProducts == null){
+                cartProducts = new HashSet<>();
+            }
+            cartProduct.setCart(this);
+            cartProducts.add(cartProduct);
+        }
+    }
 }
