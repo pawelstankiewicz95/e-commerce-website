@@ -15,8 +15,12 @@ import java.util.Set;
 @Transactional
 public class CartServiceImpl implements CartService {
 
+    private final CartRepository cartRepository;
+
     @Autowired
-    CartRepository cartRepository;
+    CartServiceImpl(CartRepository cartRepository) {
+        this.cartRepository = cartRepository;
+    }
 
     @Override
     public Cart saveCart(CartDto cartDto) {
