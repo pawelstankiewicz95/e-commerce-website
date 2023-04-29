@@ -5,4 +5,5 @@ import com.pawelapps.ecommerce.entity.Cart;
 
 public interface CartService {
     Cart saveCart(CartDto cartDto);
+    CartDto getCartByUserEmail(String email);
 }

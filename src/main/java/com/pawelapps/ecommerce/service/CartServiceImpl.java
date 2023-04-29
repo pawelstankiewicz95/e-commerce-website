@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -40,5 +41,15 @@ public class CartServiceImpl implements CartService {
         cartProducts.forEach(cartProduct -> cart.addCartProduct(cartProduct));
         return cartRepository.save(cart);
     }
-}
 
+    @Override
+    public CartDto getCartByUserEmail(String email) {
+        Cart cartFromDb = cartRepository.findByUserEmail(email);
+        Set<CartProduct> cartProductsFromDb = cartFromDb.getCartProducts();
+        Set<CartProduct> dtoCartProducts = cartProductsFromDb.stream().collect(Collectors.toSet());
+        CartDto cartDto = CartDto.builder()
+                .user(cartFromDb.getUser())
+                .cartProducts(dtoCartProducts).build();
+        return cartDto;
+    }
+}
