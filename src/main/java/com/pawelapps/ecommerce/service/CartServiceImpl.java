@@ -5,6 +5,8 @@ import com.pawelapps.ecommerce.dto.CartDto;
 import com.pawelapps.ecommerce.entity.Cart;
 import com.pawelapps.ecommerce.entity.CartProduct;
 import com.pawelapps.ecommerce.entity.User;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,9 @@ public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Autowired
     CartServiceImpl(CartRepository cartRepository) {
         this.cartRepository = cartRepository;
@@ -25,9 +30,15 @@ public class CartServiceImpl implements CartService {
     @Override
     public Cart saveCart(CartDto cartDto) {
         User user = cartDto.getUser();
+        Cart cartFromDb = cartRepository.findByUserEmail(user.getEmail());
+        if (cartFromDb != null) {
+            cartRepository.delete(cartFromDb);
+            entityManager.flush();
+        }
         Set<CartProduct> cartProducts = cartDto.getCartProducts();
         Cart cart = Cart.builder().user(user).build();
         cartProducts.forEach(cartProduct -> cart.addCartProduct(cartProduct));
         return cartRepository.save(cart);
     }
 }
+
