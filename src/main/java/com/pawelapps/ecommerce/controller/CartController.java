@@ -24,4 +24,10 @@ public class CartController {
         cartService.saveCart(cartDto);
         return new ResponseEntity<>(cartDto, HttpStatus.CREATED);
     }
+
+    @GetMapping("/cart")
+    public ResponseEntity<CartDto> getCartByUserEmail(String email) {
+        CartDto cartDto = cartService.getCartByUserEmail(email);
+        return new ResponseEntity<>(cartDto, HttpStatus.OK);
+    }
 }
