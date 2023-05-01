@@ -19,7 +19,7 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    @PutMapping("/cart")
+    @PostMapping("/cart")
     public ResponseEntity<CartDto> saveCart(@RequestBody CartDto cartDto) {
         cartService.saveCart(cartDto);
         return new ResponseEntity<>(cartDto, HttpStatus.CREATED);
