@@ -23,6 +23,7 @@ public class Cart {
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval=true)
     @JoinColumn(name = "user_id")
+    @JsonManagedReference
     private User user;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval=true)
