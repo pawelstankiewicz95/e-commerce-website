@@ -8,8 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin("http://localhost:4200")
-@Controller
+@RestController
 @RequestMapping("/api")
 public class CartController {
     private CartService cartService;
@@ -24,9 +23,9 @@ public class CartController {
         cartService.saveCart(cartDto);
         return new ResponseEntity<>(cartDto, HttpStatus.CREATED);
     }
-
-    @GetMapping("/cart")
-    public ResponseEntity<CartDto> getCartByUserEmail(String email) {
+    @CrossOrigin("http://localhost:4200")
+    @GetMapping("/cart/{userEmail}")
+    public ResponseEntity<CartDto> getCartByUserEmail(@PathVariable("userEmail") String email) {
         CartDto cartDto = cartService.getCartByUserEmail(email);
         return new ResponseEntity<>(cartDto, HttpStatus.OK);
     }
