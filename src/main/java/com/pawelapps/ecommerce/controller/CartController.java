@@ -5,7 +5,6 @@ import com.pawelapps.ecommerce.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,5 +27,11 @@ public class CartController {
     public ResponseEntity<CartDto> getCartByUserEmail(@PathVariable("userEmail") String email) {
         CartDto cartDto = cartService.getCartByUserEmail(email);
         return new ResponseEntity<>(cartDto, HttpStatus.OK);
+    }
+
+    @DeleteMapping("cart/{userEmail}")
+    public ResponseEntity<?> deleteCartByUserEmail(@PathVariable("userEmail") String email){
+        cartService.deleteCartByUserEmail(email);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
