@@ -9,6 +9,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
@@ -31,11 +32,6 @@ public class CartServiceImpl implements CartService {
     @Override
     public Cart saveCart(CartDto cartDto) {
         User user = cartDto.getUser();
-        Cart cartFromDb = cartRepository.findByUserEmail(user.getEmail());
-        if (cartFromDb != null) {
-            cartRepository.delete(cartFromDb);
-            entityManager.flush();
-        }
         Set<CartProduct> cartProducts = cartDto.getCartProducts();
         Cart cart = Cart.builder().user(user).build();
         cartProducts.forEach(cartProduct -> cart.addCartProduct(cartProduct));
@@ -51,5 +47,15 @@ public class CartServiceImpl implements CartService {
                 .user(cartFromDb.getUser())
                 .cartProducts(dtoCartProducts).build();
         return cartDto;
+    }
+
+    @Override
+    public void deleteCartByUserEmail(String email) {
+        cartRepository.deleteByUserEmail(email);
+    }
+
+    //@Transactional(propagation = Propagation.REQUIRES_NEW)
+    private void deleteCart(Cart cart) {
+       cartRepository.delete(cart);
     }
 }
