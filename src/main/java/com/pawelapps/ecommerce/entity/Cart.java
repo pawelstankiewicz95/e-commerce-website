@@ -21,18 +21,18 @@ public class Cart {
     @Column(name = "id")
     private Long id;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval=true)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id")
     @JsonManagedReference
     private User user;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval=true)
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private Set<CartProduct> cartProducts = new HashSet<>();
 
-    public void addCartProduct(CartProduct cartProduct){
-        if (cartProduct != null){
-            if (cartProducts == null){
+    public void addCartProduct(CartProduct cartProduct) {
+        if (cartProduct != null) {
+            if (cartProducts == null) {
                 cartProducts = new HashSet<>();
             }
             cartProduct.setCart(this);
