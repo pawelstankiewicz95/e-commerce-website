@@ -22,7 +22,7 @@ public class CartController {
         cartService.saveCart(cartDto);
         return new ResponseEntity<>(cartDto, HttpStatus.CREATED);
     }
-    @CrossOrigin("http://localhost:4200")
+
     @GetMapping("/cart/{userEmail}")
     public ResponseEntity<CartDto> getCartByUserEmail(@PathVariable("userEmail") String email) {
         CartDto cartDto = cartService.getCartByUserEmail(email);
