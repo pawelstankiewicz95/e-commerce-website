@@ -5,24 +5,17 @@ import com.pawelapps.ecommerce.dto.CartDto;
 import com.pawelapps.ecommerce.entity.Cart;
 import com.pawelapps.ecommerce.entity.CartProduct;
 import com.pawelapps.ecommerce.entity.User;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
-
-    @PersistenceContext
-    private EntityManager entityManager;
 
     @Autowired
     CartServiceImpl(CartRepository cartRepository) {
@@ -30,6 +23,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @Transactional
     public Cart saveCart(CartDto cartDto) {
         User user = cartDto.getUser();
         Set<CartProduct> cartProducts = cartDto.getCartProducts();
@@ -39,6 +33,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @Transactional
     public CartDto getCartByUserEmail(String email) {
         Cart cartFromDb = cartRepository.findByUserEmail(email);
         Set<CartProduct> cartProductsFromDb = cartFromDb.getCartProducts();
@@ -50,12 +45,9 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @Transactional
     public void deleteCartByUserEmail(String email) {
         cartRepository.deleteByUserEmail(email);
     }
 
-    //@Transactional(propagation = Propagation.REQUIRES_NEW)
-    private void deleteCart(Cart cart) {
-       cartRepository.delete(cart);
-    }
 }

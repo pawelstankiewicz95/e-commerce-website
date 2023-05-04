@@ -37,7 +37,7 @@ public class CartProduct {
     @Column(name = "image_url")
     private String imageUrl;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
+    @ManyToOne(fetch= FetchType.LAZY)
     @JoinColumn(name = "cart_id", referencedColumnName = "id")
     @JsonBackReference
     private Cart cart;
