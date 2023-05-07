@@ -6,6 +6,7 @@ import com.pawelapps.ecommerce.entity.Cart;
 import com.pawelapps.ecommerce.entity.CartProduct;
 import com.pawelapps.ecommerce.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +35,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
+    @PreAuthorize("principal.subject == #email")
     public CartDto getCartByUserEmail(String email) {
         Cart cartFromDb = cartRepository.findByUserEmail(email);
 
@@ -51,6 +53,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
+    @PreAuthorize("principal.subject == #email")
     public void deleteCartByUserEmail(String email) {
         cartRepository.deleteByUserEmail(email);
     }
