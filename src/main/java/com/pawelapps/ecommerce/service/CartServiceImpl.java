@@ -36,12 +36,17 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public CartDto getCartByUserEmail(String email) {
         Cart cartFromDb = cartRepository.findByUserEmail(email);
-        Set<CartProduct> cartProductsFromDb = cartFromDb.getCartProducts();
-        Set<CartProduct> dtoCartProducts = cartProductsFromDb.stream().collect(Collectors.toSet());
-        CartDto cartDto = CartDto.builder()
-                .user(cartFromDb.getUser())
-                .cartProducts(dtoCartProducts).build();
-        return cartDto;
+
+        if (cartFromDb != null) {
+            Set<CartProduct> cartProductsFromDb = cartFromDb.getCartProducts();
+            Set<CartProduct> dtoCartProducts = cartProductsFromDb.stream().collect(Collectors.toSet());
+            CartDto cartDto = CartDto.builder()
+                    .user(cartFromDb.getUser())
+                    .cartProducts(dtoCartProducts).build();
+            return cartDto;
+        } else {
+            return null;
+        }
     }
 
     @Override
