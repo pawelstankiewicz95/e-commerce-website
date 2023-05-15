@@ -1,11 +1,8 @@
 package com.pawelapps.ecommerce.controller;
 
-import com.pawelapps.ecommerce.dto.CartDto;
-import com.pawelapps.ecommerce.entity.Cart;
+import com.pawelapps.ecommerce.dto.CartProductDto;
 import com.pawelapps.ecommerce.entity.CartProduct;
-import com.pawelapps.ecommerce.entity.Product;
 import com.pawelapps.ecommerce.service.CartProductService;
-import com.pawelapps.ecommerce.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +19,6 @@ public class CartProductController {
     public CartProductController(CartProductService cartProductService) {
         this.cartProductService = cartProductService;
     }
-
- /*   @PostMapping("/cart-products")
-    public ResponseEntity<CartDto> saveCart(@RequestBody CartDto cartDto) {
-        cartService.saveCart(cartDto);
-        return new ResponseEntity<>(cartDto, HttpStatus.CREATED);
-    }*/
 
     @GetMapping("/cart-products/{userEmail}")
     public ResponseEntity<List<CartProduct>> getCartProductsByUserEmail(@PathVariable("userEmail") String email) {
@@ -48,14 +39,20 @@ public class CartProductController {
     }
 
     @DeleteMapping("cart-products/{userEmail}")
-    public ResponseEntity<?> deleteAllCartProductsByUserEmail(@PathVariable("userEmail") String email){
+    public ResponseEntity<?> deleteAllCartProductsByUserEmail(@PathVariable("userEmail") String email) {
         cartProductService.deleteAllCartProductsByUserEmail(email);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("cart-products/{userEmail}/{productId}")
-    public ResponseEntity<?> deleteCartProductByUserEmailAndProductId(@PathVariable("userEmail") String email, @PathVariable("productId") Long id){
-        cartProductService.deleteCartProduct(email,id);
+    public ResponseEntity<?> deleteCartProductByUserEmailAndProductId(@PathVariable("userEmail") String email, @PathVariable("productId") Long id) {
+        cartProductService.deleteCartProduct(email, id);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping("cart-products/{userEmail}")
+    public ResponseEntity<CartProductDto> saveCartProduct(@RequestBody CartProductDto cartProductDto, @PathVariable("userEmail") String userEmail) {
+        cartProductService.saveCartProductToCart(cartProductDto, userEmail);
+        return new ResponseEntity<>(cartProductDto, HttpStatus.CREATED);
     }
 }
