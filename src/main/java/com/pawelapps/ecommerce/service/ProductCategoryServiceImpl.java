@@ -2,7 +2,7 @@ package com.pawelapps.ecommerce.service;
 
 import com.pawelapps.ecommerce.dao.ProductCategoryRepository;
 import com.pawelapps.ecommerce.entity.ProductCategory;
-import com.pawelapps.ecommerce.exception.ProductCategoryNotFoundException;
+import com.pawelapps.ecommerce.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +28,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     @Override
     public ProductCategory getProductCategoryById(Long id) {
-        return productCategoryRepository.findById(id).orElseThrow(() -> new ProductCategoryNotFoundException("Product category with id " + id + " doesn't exist"));
+        return productCategoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Product category with id " + id + " doesn't exist"));
     }
 
     @Override
