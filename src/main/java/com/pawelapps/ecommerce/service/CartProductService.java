@@ -1,5 +1,6 @@
 package com.pawelapps.ecommerce.service;
 
+import com.pawelapps.ecommerce.dto.CartProductDto;
 import com.pawelapps.ecommerce.entity.CartProduct;
 
 import java.util.List;
@@ -25,5 +26,7 @@ public interface CartProductService {
     void deleteCartProduct(String email, Long productId);
 
     void deleteAllCartProductsByUserEmail(String email);
+
+    CartProduct saveCartProductToCart(CartProductDto cartProductDto, String userEmail);
 
 }
