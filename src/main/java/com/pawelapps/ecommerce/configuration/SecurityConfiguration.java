@@ -18,11 +18,12 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests((request) -> request
-                        .requestMatchers("/api/cart/**")
-                        .authenticated()
-                        .anyRequest()
-                        .permitAll())
+                        .requestMatchers("/api/cart/**").authenticated()
+                        .requestMatchers("/api/cart-products/**").authenticated()
+                        .anyRequest().permitAll()
+                        )
                 .oauth2ResourceServer().jwt();
+
 
         Okta.configureResourceServer401ResponseBody(httpSecurity);
         httpSecurity.setSharedObject(ContentNegotiationStrategy.class, new HeaderContentNegotiationStrategy());
