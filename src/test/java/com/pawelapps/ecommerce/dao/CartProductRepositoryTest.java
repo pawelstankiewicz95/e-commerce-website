@@ -12,9 +12,9 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @TestPropertySource("/test-application.properties")
@@ -107,6 +107,24 @@ public class CartProductRepositoryTest {
 
         assertEquals(1, updatedRows, "One row should be updated");
         assertEquals(initialQuantity - 1, updatedQuantity, "Product quantity should be increased by 1");
+    }
+
+    @Test
+    void testDeleteCartProduct() {
+        String userEmail = "test@email.com";
+        Long cartProductId = 1L;
+
+        CartProduct cartProductFromDb = cartProductRepository.findById(cartProductId).orElse(null);
+        assertNotNull(cartProductFromDb);
+
+        cartProductRepository.deleteCartProduct(userEmail, cartProductId);
+        entityManager.flush();
+        entityManager.clear();
+
+        Optional<CartProduct> optionalCartProduct = cartProductRepository.findById(cartProductId);
+
+
+        assertTrue(optionalCartProduct.isEmpty(), "optionalCartProduct should be empty");
     }
 }
 
