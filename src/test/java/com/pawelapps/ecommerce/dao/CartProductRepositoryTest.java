@@ -126,6 +126,22 @@ public class CartProductRepositoryTest {
 
         assertTrue(optionalCartProduct.isEmpty(), "optionalCartProduct should be empty");
     }
+
+    @Test
+    void deleteAllCartProductsByUserEmail() {
+        String userEmail = "test@email.com";
+
+        List<CartProduct> cartProducts = cartProductRepository.findCartProductsByUserEmail(userEmail);
+        assertEquals(2, cartProducts.size(), "List should contain 2 items");
+
+        cartProductRepository.deleteAllCartProductsByUserEmail(userEmail);
+        entityManager.flush();
+        entityManager.clear();
+
+        List<CartProduct> listOfCartProductsAfterDelete = cartProductRepository.findCartProductsByUserEmail(userEmail);
+
+        assertTrue(listOfCartProductsAfterDelete.isEmpty());
+    }
 }
 
 
