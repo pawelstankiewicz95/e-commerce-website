@@ -81,13 +81,12 @@ class ProductRepositoryTest {
     @Test
     void updateProductTest() {
         Product productFromDataBase = productRepository.findById(1L).orElse(null);
-        if (productFromDataBase != null) {
-            productFromDataBase.setName("updated Cup");
-            Product updatedProduct = productRepository.save(productFromDataBase);
+        assertNotNull(productFromDataBase, "Object should not be null");
+        productFromDataBase.setName("updated Cup");
+        Product updatedProduct = productRepository.save(productFromDataBase);
 
-            assertEquals(productFromDataBase.getId(), updatedProduct.getId(), "Id's should be the same");
-            assertEquals(updatedProduct.getName(), "updated Cup", "Product names should be the same");
-        } else fail("object should not be null");
+        assertEquals(productFromDataBase.getId(), updatedProduct.getId(), "Id's should be the same");
+        assertEquals("updated Cup", updatedProduct.getName(), "Product names should be the same");
     }
 
     @Test
