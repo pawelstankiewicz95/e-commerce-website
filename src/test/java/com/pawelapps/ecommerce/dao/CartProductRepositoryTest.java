@@ -14,6 +14,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @DataJpaTest
 @TestPropertySource("/test-application.properties")
@@ -25,31 +26,66 @@ public class CartProductRepositoryTest {
     @Autowired
     CartProductRepository cartProductRepository;
 
+    CartProduct cartProduct1;
+    CartProduct cartProduct2;
+    Cart cart;
+    User user;
+
     @BeforeEach
     void setUp() {
-        User user = new User();
+        user = new User();
         user.setEmail("test@email.com");
         entityManager.persist(user);
 
-        Cart cart = new Cart();
+        cart = new Cart();
         cart.setUser(user);
         entityManager.persist(cart);
 
-        CartProduct cartProduct1 = new CartProduct();
+        cartProduct1 = new CartProduct();
+        cartProduct1.setId(1L);
         cartProduct1.setCart(cart);
+        cartProduct1.setQuantity(1);
         entityManager.persist(cartProduct1);
 
-        CartProduct cartProduct2 = new CartProduct();
+        cartProduct2 = new CartProduct();
+        cartProduct2.setId(2L);
         cartProduct2.setCart(cart);
+        cartProduct2.setQuantity(2);
         entityManager.persist(cartProduct2);
 
         entityManager.flush();
     }
 
     @Test
-    void testFindCartProductsByUserEmail(){
+    void testFindCartProductsByUserEmail() {
         String userEmail = "test@email.com";
+
         List<CartProduct> cartProducts = cartProductRepository.findCartProductsByUserEmail(userEmail);
-        assertEquals(2, cartProducts.size());
+
+        assertEquals(2, cartProducts.size(), "List should have two objects");
+    }
+
+    @Test
+    void testIncreaseCartProductQuantityByOne() {
+        String userEmail = "test@email.com";
+        Long cartProductId = 1L;
+
+        CartProduct cartProductBeforeUpdate = cartProductRepository.findById(cartProductId).orElse(null);
+        assertNotNull(cartProductBeforeUpdate, "Object should not be null");
+        int initialQuantity = cartProductBeforeUpdate.getQuantity();
+
+        Integer updatedRows = cartProductRepository.increaseCartProductQuantityByOne(userEmail, cartProductId);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        CartProduct cartProductAfterUpdate = cartProductRepository.findById(cartProductId).orElse(null);
+        assertNotNull(cartProductAfterUpdate, "Object should not be null");
+        int updatedQuantity = cartProductAfterUpdate.getQuantity();
+
+        assertEquals(1, updatedRows, "One row should be updated");
+        assertEquals(initialQuantity + 1, updatedQuantity, "Product quantity should be increased by 1");
     }
 }
+
+
