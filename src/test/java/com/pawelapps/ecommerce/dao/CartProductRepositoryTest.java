@@ -44,7 +44,7 @@ public class CartProductRepositoryTest {
         cartProduct1 = new CartProduct();
         cartProduct1.setId(1L);
         cartProduct1.setCart(cart);
-        cartProduct1.setQuantity(1);
+        cartProduct1.setQuantity(2);
         entityManager.persist(cartProduct1);
 
         cartProduct2 = new CartProduct();
@@ -85,6 +85,28 @@ public class CartProductRepositoryTest {
 
         assertEquals(1, updatedRows, "One row should be updated");
         assertEquals(initialQuantity + 1, updatedQuantity, "Product quantity should be increased by 1");
+    }
+
+    @Test
+    void testDecreaseCartProductQuantityByOne() {
+        String userEmail = "test@email.com";
+        Long cartProductId = 1L;
+
+        CartProduct cartProductBeforeUpdate = cartProductRepository.findById(cartProductId).orElse(null);
+        assertNotNull(cartProductBeforeUpdate, "Object should not be null");
+        int initialQuantity = cartProductBeforeUpdate.getQuantity();
+
+        Integer updatedRows = cartProductRepository.decreaseCartProductQuantityByOne(userEmail, cartProductId);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        CartProduct cartProductAfterUpdate = cartProductRepository.findById(cartProductId).orElse(null);
+        assertNotNull(cartProductAfterUpdate, "Object should not be null");
+        int updatedQuantity = cartProductAfterUpdate.getQuantity();
+
+        assertEquals(1, updatedRows, "One row should be updated");
+        assertEquals(initialQuantity - 1, updatedQuantity, "Product quantity should be increased by 1");
     }
 }
 
