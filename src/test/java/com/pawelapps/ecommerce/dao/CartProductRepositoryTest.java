@@ -23,6 +23,7 @@ public class CartProductRepositoryTest {
 
     @Autowired
     EntityManager entityManager;
+
     @Autowired
     CartProductRepository cartProductRepository;
 

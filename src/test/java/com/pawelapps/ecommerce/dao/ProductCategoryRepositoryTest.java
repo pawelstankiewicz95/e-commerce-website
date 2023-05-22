@@ -54,46 +54,52 @@ public class ProductCategoryRepositoryTest {
     @Test
     void saveProductCategoryTest() {
         productCategoryRepository.save(productCategory);
+
         assertTrue(productCategory.getId() > 0, "Id should be greater than 0");
     }
 
     @Test
     void getCategoriesTest() {
         List<ProductCategory> categories = productCategoryRepository.findAll();
+
         assertFalse(categories.isEmpty(), "List should not be empty");
     }
 
     @Test
-
     void getCategoryTest() {
         ProductCategory productCategoryFromDatabase = productCategoryRepository.findById(1L).orElse(null);
-        if (productCategoryFromDatabase != null) {
-            assertEquals(productCategory, productCategoryFromDatabase, "Objects should be the same");
-            assertEquals("Cup", productCategoryFromDatabase.getCategoryName());
-        } else fail("Object should not be null");
+
+        assertNotNull(productCategoryFromDatabase, "productCategoryFromDatabase should not be null");
+
+        assertEquals(productCategory, productCategoryFromDatabase, "Objects should be the same");
+        assertEquals("Cup", productCategoryFromDatabase.getCategoryName());
     }
 
     @Test
     void updateProductCategoryTest() {
         ProductCategory productCategoryFromDatabase = productCategoryRepository.findById(1L).orElse(null);
-        if (productCategoryFromDatabase != null) {
-            productCategoryFromDatabase.setCategoryName("updated category : Cup");
-            ProductCategory updatedProductCategory = productCategoryRepository.save(productCategoryFromDatabase);
 
-            assertEquals(productCategoryFromDatabase.getId(), updatedProductCategory.getId(), "Id's should be the same");
-            assertEquals(updatedProductCategory.getCategoryName(), "updated category : Cup", "Category names should be the same");
-        } else fail("object should not be null");
+        assertNotNull(productCategoryFromDatabase, "productCategoryFromDatabase should not be null");
+
+        productCategoryFromDatabase.setCategoryName("updated category : Cup");
+        ProductCategory updatedProductCategory = productCategoryRepository.save(productCategoryFromDatabase);
+
+        assertEquals(productCategoryFromDatabase.getId(), updatedProductCategory.getId(), "Id's should be the same");
+        assertEquals(updatedProductCategory.getCategoryName(), "updated category : Cup", "Category names should be the same");
+
     }
 
     @Test
     void deleteProductCategoryTest() {
         ProductCategory productCategoryFromDatabase = productCategoryRepository.findById(1L).orElse(null);
-        if (productCategoryFromDatabase != null) {
-            productCategoryRepository.delete(productCategoryFromDatabase);
-            Optional<ProductCategory> optionalProductCategory = productCategoryRepository.findById(1L);
 
-            assertTrue(optionalProductCategory.isEmpty(), "optionalProductCategory should be empty");
-        } else fail("object should not be null");
+        assertNotNull(productCategoryFromDatabase, "productCategoryFromDatabase should not be null");
+
+        productCategoryRepository.delete(productCategoryFromDatabase);
+        Optional<ProductCategory> optionalProductCategory = productCategoryRepository.findById(1L);
+
+        assertTrue(optionalProductCategory.isEmpty(), "optionalProductCategory should be empty");
+
     }
 
 }
