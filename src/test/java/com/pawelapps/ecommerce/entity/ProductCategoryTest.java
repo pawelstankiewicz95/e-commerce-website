@@ -32,7 +32,9 @@ class ProductCategoryTest {
                 .dateCreated(LocalDateTime.now())
                 .lastUpdated(LocalDateTime.now())
                 .build();
+
         productCategory.addProduct(product);
+
         assertFalse(productCategory.getProducts().isEmpty(), "Should not be empty");
         assertTrue(productCategory.getProducts().contains(product), "Should contain added product");
     }

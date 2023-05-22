@@ -57,6 +57,7 @@ public class ProductServiceTest {
     @Test
     void createProductTest() {
         when(productRepository.save(any(Product.class))).thenReturn(product);
+
         assertEquals(product, productService.createProduct(new Product()), "product objects should be equal");
         verify(productRepository).save(any(Product.class));
     }
@@ -64,6 +65,7 @@ public class ProductServiceTest {
     @Test
     void getProductByIdTest() {
         when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
+
         assertEquals(Optional.of(product), Optional.of(productService.getProductById(1L)), "product objects should be equal");
         verify(productRepository).findById(1L);
     }
@@ -72,7 +74,9 @@ public class ProductServiceTest {
     void getAllProductsTest() {
         products = new ArrayList<>();
         products.add(product);
+
         when(productRepository.findAll()).thenReturn(products);
+
         assertEquals(products.size(), productService.getAllProducts().size(), "list sizes should be equal");
         verify(productRepository).findAll();
     }
@@ -80,6 +84,7 @@ public class ProductServiceTest {
     @Test
     void updateProductTest() {
         when(productRepository.save(any(Product.class))).thenReturn(product);
+
         assertEquals(product, productService.updateProduct(new Product()), "product objects should be equal");
         verify(productRepository).save(any(Product.class));
     }
@@ -87,7 +92,9 @@ public class ProductServiceTest {
     @Test
     void deleteProductByIdTest() {
         doNothing().when(productRepository).deleteById(anyLong());
+
         productService.deleteProductById(anyLong());
+
         verify(productRepository).deleteById(anyLong());
     }
 
@@ -95,7 +102,9 @@ public class ProductServiceTest {
     void getProductsByNameLikeOrSkuLike() {
         products = new ArrayList<>();
         products.add(product);
+
         when(productRepository.findByNameLikeOrSkuLike(anyString())).thenReturn(products);
+
         assertEquals(products.size(), productService.getProductsByNameOrSku(anyString()).size(), "list sizes should be equal");
         verify(productRepository).findByNameLikeOrSkuLike(anyString());
     }

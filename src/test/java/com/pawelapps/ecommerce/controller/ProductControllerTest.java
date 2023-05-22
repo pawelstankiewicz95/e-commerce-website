@@ -47,6 +47,7 @@ public class ProductControllerTest {
     void setUpDataBase() {
 
         productCategory = ProductCategory.builder().categoryName("Cup").build();
+        entityManager.persist(productCategory);
 
         product = Product.builder()
                 .sku("123456")
@@ -61,6 +62,7 @@ public class ProductControllerTest {
                 .productCategory(productCategory)
                 .build();
         entityManager.persist(product);
+
         product = Product.builder()
                 .sku("888999")
                 .name("Second TestCup")
@@ -74,7 +76,7 @@ public class ProductControllerTest {
                 .productCategory(productCategory)
                 .build();
         entityManager.persist(product);
-        entityManager.persist(productCategory);
+
         entityManager.flush();
 
     }
@@ -101,6 +103,7 @@ public class ProductControllerTest {
                 .lastUpdated(LocalDateTime.now())
                 .productCategory(productCategory)
                 .build();
+
         mockMvc.perform(MockMvcRequestBuilders.post("/api/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
@@ -123,6 +126,7 @@ public class ProductControllerTest {
                 .lastUpdated(LocalDateTime.now())
                 .productCategory(productCategory)
                 .build();
+
         mockMvc.perform(MockMvcRequestBuilders.put("/api/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))

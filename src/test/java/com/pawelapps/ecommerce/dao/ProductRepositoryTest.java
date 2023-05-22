@@ -59,17 +59,20 @@ class ProductRepositoryTest {
     @Test
     void saveProductTest() {
         productRepository.save(product);
+
         assertTrue(product.getId() > 0, "Id should be greater than 0");
     }
 
     @Test
     void getProductTest() {
-        Product productFromDataBase = productRepository.findById(1L).orElse(null);
-        if (productFromDataBase != null) {
-            assertEquals(product, productFromDataBase, "Objects should be the same");
-            assertEquals("123456", productFromDataBase.getSku());
-            assertEquals(productCategory.getCategoryName(), "Cup", "Categories should be equal");
-        } else fail("Object should not be null");
+        Product productFromDatabase = productRepository.findById(1L).orElse(null);
+
+        assertNotNull(productFromDatabase, "productFromDatabase should not be null");
+
+        assertEquals(product, productFromDatabase, "Objects should be the same");
+        assertEquals("123456", productFromDatabase.getSku());
+        assertEquals(productCategory.getCategoryName(), "Cup", "Categories should be equal");
+
     }
 
     @Test
@@ -92,14 +95,17 @@ class ProductRepositoryTest {
     @Test
     void deleteProductTest() {
         Product productFromDataBase = productRepository.findById(1L).orElse(null);
-        if (productFromDataBase != null) {
-            productRepository.delete(productFromDataBase);
-            Optional<Product> optionalProduct = productRepository.findById(1L);
-            Optional<ProductCategory> optionalProductCategory = productCategoryRepository.findById(1L);
 
-            assertTrue(optionalProduct.isEmpty(), "Optional product should be empty");
-            assertFalse(optionalProductCategory.isEmpty(), "Product category should not be deleted");
-        } else fail("object should not be null");
+        assertNotNull(productFromDataBase, "productFromDatabase should not be null");
+
+        productRepository.delete(productFromDataBase);
+
+        Optional<Product> optionalProduct = productRepository.findById(1L);
+        Optional<ProductCategory> optionalProductCategory = productCategoryRepository.findById(1L);
+
+        assertTrue(optionalProduct.isEmpty(), "Optional product should be empty");
+        assertFalse(optionalProductCategory.isEmpty(), "Product category should not be deleted");
+
     }
 
     @Test
