@@ -7,6 +7,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.accept.ContentNegotiationStrategy;
 import org.springframework.web.accept.HeaderContentNegotiationStrategy;
@@ -27,17 +28,23 @@ public class SecurityConfiguration {
 
                         .requestMatchers(HttpMethod.POST, "/api/product-categories/**").hasAuthority("admin")
                         .requestMatchers(HttpMethod.PUT, "/api/product-categories/**").hasAuthority("admin")
-                        .requestMatchers(HttpMethod.DELETE, "/api//product-categories/**").hasAuthority("admin")
+                        .requestMatchers(HttpMethod.DELETE, "/api/product-categories/**").hasAuthority("admin")
+
                         .anyRequest().permitAll()
                 )
-
                 .oauth2ResourceServer().jwt();
-
 
         Okta.configureResourceServer401ResponseBody(httpSecurity);
         httpSecurity.setSharedObject(ContentNegotiationStrategy.class, new HeaderContentNegotiationStrategy());
         httpSecurity.csrf().disable();
         httpSecurity.cors();
         return httpSecurity.build();
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+                .requestMatchers(HttpMethod.GET, "/api/product-categories/**")
+                .requestMatchers(HttpMethod.GET, "/api/products/**");
     }
 }
