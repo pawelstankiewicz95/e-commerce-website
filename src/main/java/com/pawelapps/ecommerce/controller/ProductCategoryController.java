@@ -5,6 +5,8 @@ import com.pawelapps.ecommerce.service.ProductCategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,19 +35,22 @@ public class ProductCategoryController {
     }
 
     @PostMapping(value = "/product-categories", consumes = "application/json;charset=UTF-8")
-    public ResponseEntity<ProductCategory> createProduct(@RequestBody ProductCategory productCategory) {
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<ProductCategory> createProduct(@RequestBody ProductCategory productCategory) throws AccessDeniedException{
         ProductCategory newProductCategory = productCategoryService.createProductCategory(productCategory);
         return new ResponseEntity<>(productCategory, HttpStatus.CREATED);
     }
 
     @PutMapping("/product-categories")
-    public ResponseEntity<ProductCategory> updateProduct(@RequestBody ProductCategory productCategory) {
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<ProductCategory> updateProduct(@RequestBody ProductCategory productCategory) throws AccessDeniedException{
         ProductCategory updatedProductCategory = productCategoryService.updateProductCategory(productCategory);
         return new ResponseEntity<>(updatedProductCategory, HttpStatus.OK);
     }
 
     @DeleteMapping("/product-categories/{id}")
-    public ResponseEntity<?> deleteProductById(@PathVariable("id") Long id) {
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<?> deleteProductById(@PathVariable("id") Long id) throws AccessDeniedException {
         productCategoryService.deleteProductCategoryById(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }

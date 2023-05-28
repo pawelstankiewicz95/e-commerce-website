@@ -21,15 +21,6 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests((request) -> request
                         .requestMatchers("/api/cart/**").authenticated()
-
-                        .requestMatchers(HttpMethod.POST, "/api/products/**").hasAuthority("admin")
-                        .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAuthority("admin")
-                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAuthority("admin")
-
-                        .requestMatchers(HttpMethod.POST, "/api/product-categories/**").hasAuthority("admin")
-                        .requestMatchers(HttpMethod.PUT, "/api/product-categories/**").hasAuthority("admin")
-                        .requestMatchers(HttpMethod.DELETE, "/api/product-categories/**").hasAuthority("admin")
-
                         .anyRequest().permitAll()
                 )
                 .oauth2ResourceServer().jwt();
