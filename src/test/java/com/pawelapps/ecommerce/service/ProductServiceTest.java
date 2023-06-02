@@ -91,15 +91,16 @@ public class ProductServiceTest {
 
     @Test
     void deleteProductByIdTest() {
-        doNothing().when(productRepository).deleteById(anyLong());
 
-        productService.deleteProductById(anyLong());
+        long productId = 1L;
 
-        verify(productRepository).deleteById(anyLong());
+        productService.deleteProductById(productId);
+
+        verify(productRepository).deleteById(productId);
     }
 
     @Test
-    void getProductsByNameLikeOrSkuLike() {
+    void getProductsByNameLikeOrSkuLikeTest() {
         products = new ArrayList<>();
         products.add(product);
 
