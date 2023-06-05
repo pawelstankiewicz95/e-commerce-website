@@ -20,7 +20,7 @@ public class Cart {
     @Column(name = "id")
     private Long id;
 
-    @OneToOne
+    @OneToOne(cascade = {CascadeType.ALL, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, orphanRemoval = true)
     @JoinColumn(name = "user_id")
     @JsonManagedReference
     private User user;
