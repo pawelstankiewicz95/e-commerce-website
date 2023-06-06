@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pawelapps.ecommerce.configuration.SecurityConfiguration;
 import com.pawelapps.ecommerce.entity.Product;
 import com.pawelapps.ecommerce.service.ProductService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -78,15 +79,18 @@ public class ProductControllerTest {
     @DisplayName("When creating product")
     class CreateProductTest {
 
-        @Test
-        @DisplayName("When anonymous wants to access")
-        void createProductAsAnonymous() throws Exception {
+        @BeforeEach
+        void setUp() {
             product = Product.builder()
                     .sku("333222")
                     .name("New TestCup")
                     .description("Just new testing cup")
                     .build();
+        }
 
+        @Test
+        @DisplayName("When anonymous wants to access")
+        void createProductAsAnonymous() throws Exception {
             when(productService.createProduct(any(Product.class))).thenReturn(product);
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/products")
@@ -101,12 +105,6 @@ public class ProductControllerTest {
         @DisplayName("When unauthorized user wants to access")
         @WithMockUser(authorities = "user")
         void createProductAsUnauthorizedUser() throws Exception {
-            product = Product.builder()
-                    .sku("333222")
-                    .name("New TestCup")
-                    .description("Just new testing cup")
-                    .build();
-
             when(productService.createProduct(any(Product.class))).thenReturn(product);
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/products")
@@ -121,12 +119,6 @@ public class ProductControllerTest {
         @DisplayName("When authorized user wants to access")
         @WithMockUser(authorities = "admin")
         void createProductAsAuthorizedUser() throws Exception {
-            product = Product.builder()
-                    .sku("333222")
-                    .name("New TestCup")
-                    .description("Just new testing cup")
-                    .build();
-
             when(productService.createProduct(any(Product.class))).thenReturn(product);
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/products")
@@ -144,9 +136,8 @@ public class ProductControllerTest {
     @DisplayName("When updating product")
     class UpdateProductTests {
 
-        @Test
-        @DisplayName("When anonymous user wants to access")
-        void updateProductTestAsAnonymous() throws Exception {
+        @BeforeEach
+        void setUp() {
             product = Product.builder()
                     .id(123L)
                     .sku("333222")
@@ -154,6 +145,11 @@ public class ProductControllerTest {
                     .description("Description 1")
                     .build();
 
+        }
+
+        @Test
+        @DisplayName("When anonymous user wants to access")
+        void updateProductTestAsAnonymous() throws Exception {
             when(productService.updateProduct(any(Product.class))).thenReturn(product);
 
             mockMvc.perform(MockMvcRequestBuilders.put("/api/products")
@@ -167,13 +163,6 @@ public class ProductControllerTest {
         @DisplayName("When unauthorized user wants to access")
         @WithMockUser(authorities = "user")
         void updateProductTestAsUnauthorized() throws Exception {
-            product = Product.builder()
-                    .id(123L)
-                    .sku("333222")
-                    .name("Product 1")
-                    .description("Description 1")
-                    .build();
-
             when(productService.updateProduct(any(Product.class))).thenReturn(product);
 
             mockMvc.perform(MockMvcRequestBuilders.put("/api/products")
@@ -187,13 +176,6 @@ public class ProductControllerTest {
         @DisplayName("When authorized user wants to access")
         @WithMockUser(authorities = "admin")
         void updateProductTestAsAuthorized() throws Exception {
-            product = Product.builder()
-                    .id(123L)
-                    .sku("333222")
-                    .name("Product 1")
-                    .description("Description 1")
-                    .build();
-
             when(productService.updateProduct(any(Product.class))).thenReturn(product);
 
             mockMvc.perform(MockMvcRequestBuilders.put("/api/products")

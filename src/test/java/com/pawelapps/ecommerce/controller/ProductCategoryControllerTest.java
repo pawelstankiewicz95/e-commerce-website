@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pawelapps.ecommerce.configuration.SecurityConfiguration;
 import com.pawelapps.ecommerce.entity.ProductCategory;
 import com.pawelapps.ecommerce.service.ProductCategoryService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -123,11 +125,15 @@ public class ProductCategoryControllerTest {
     @DisplayName("When updating product category")
     class UpdateProductTests {
 
+        @BeforeEach
+        void setup(){
+            productCategory = ProductCategory.builder().categoryName("Category 1").build();
+        }
+
         @Test
         @DisplayName("When anonymous user wants to access")
+        @WithAnonymousUser
         void updateProductCategoryTestAsAnonymous() throws Exception {
-            productCategory = ProductCategory.builder().categoryName("Category 1").build();
-
             when(productCategoryService.updateProductCategory(any(ProductCategory.class))).thenReturn(productCategory);
 
             mockMvc.perform(MockMvcRequestBuilders.put("/api/product-categories")
@@ -141,8 +147,6 @@ public class ProductCategoryControllerTest {
         @DisplayName("When unauthorized user wants to access")
         @WithMockUser(authorities = "user")
         void updateProductCategoryTestAsUnauthorized() throws Exception {
-            productCategory = ProductCategory.builder().categoryName("Category 1").build();
-
             when(productCategoryService.updateProductCategory(any(ProductCategory.class))).thenReturn(productCategory);
 
             mockMvc.perform(MockMvcRequestBuilders.put("/api/product-categories")
@@ -156,8 +160,6 @@ public class ProductCategoryControllerTest {
         @DisplayName("When authorized user wants to access")
         @WithMockUser(authorities = "admin")
         void updateProductCategoryTestAsAuthorized() throws Exception {
-            productCategory = ProductCategory.builder().categoryName("Category 1").build();
-
             when(productCategoryService.updateProductCategory(any(ProductCategory.class))).thenReturn(productCategory);
 
             mockMvc.perform(MockMvcRequestBuilders.put("/api/product-categories")
