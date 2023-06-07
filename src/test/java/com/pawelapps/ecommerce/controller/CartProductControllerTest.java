@@ -1,9 +1,10 @@
 package com.pawelapps.ecommerce.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pawelapps.ecommerce.dto.CartProductDto;
 import com.pawelapps.ecommerce.entity.CartProduct;
 import com.pawelapps.ecommerce.service.CartProductService;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @SpringBootTest
-//@Import(SecurityConfiguration.class)
 @AutoConfigureMockMvc
 public class CartProductControllerTest {
 
@@ -39,66 +39,55 @@ public class CartProductControllerTest {
     @MockBean
     CartProductService cartProductService;
 
+    final String cartOwnerEmail = "owner@example.com";
+    final String notCartOwnerEmail = "notowner@example.com";
+
     @Nested
-    @DisplayName("When getting cart products")
-    class getCartProductTest {
-        @Test
-        @DisplayName("When cart owner trying to access")
-        @WithMockUser(username = "owner@example.com", authorities = "Everyone")
-        void getCartProductsByCartOwnerTest() throws Exception {
-            List<CartProduct> cartProductsList = Arrays.asList(
+    class getCartProductsByUserEmailTest {
+
+        List<CartProduct> cartProductsList;
+
+        @BeforeEach
+        void setUp() {
+            cartProductsList = Arrays.asList(
                     CartProduct.builder().name("Cart product 1").build(),
                     CartProduct.builder().name("Cart product 2").build()
             );
+        }
 
-            when(cartProductService.findCartProductsByUserEmail("owner@example.com")).thenReturn(cartProductsList);
+        private void testForbiddenAccess() throws Exception {
+            when(cartProductService.findCartProductsByUserEmail(cartOwnerEmail)).thenReturn(cartProductsList);
+
+            mockMvc.perform(MockMvcRequestBuilders.get("/api/cart-products/" + cartOwnerEmail))
+                    .andExpect(status().isForbidden());
+            verify(cartProductService, times(0)).findCartProductsByUserEmail(cartOwnerEmail);
+        }
+
+        @Test
+        @WithMockUser(username = cartOwnerEmail, authorities = "Everyone")
+        void shouldReturnCartProductsForCartOwner() throws Exception {
+            when(cartProductService.findCartProductsByUserEmail(cartOwnerEmail)).thenReturn(cartProductsList);
 
             mockMvc.perform(MockMvcRequestBuilders.get("/api/cart-products/owner@example.com"))
-
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$", hasSize(2)))
                     .andExpect(jsonPath("$[0].name", is("Cart product 1")))
                     .andExpect(jsonPath("$[1].name", is("Cart product 2")));
 
-            verify(cartProductService, times(1)).findCartProductsByUserEmail("owner@example.com");
+            verify(cartProductService, times(1)).findCartProductsByUserEmail(cartOwnerEmail);
         }
 
         @Test
-        @DisplayName("When not owner trying to access")
-        @WithMockUser(username = "notowner@example.com", authorities = "Everyone")
-        void getCartProductsByNotOwnerTest() throws Exception {
-
-            List<CartProduct> cartProductsList = Arrays.asList(
-                    CartProduct.builder().name("Cart product 1").build(),
-                    CartProduct.builder().name("Cart product 2").build()
-            );
-
-            when(cartProductService.findCartProductsByUserEmail("owner@example.com")).thenReturn(cartProductsList);
-
-
-            mockMvc.perform(MockMvcRequestBuilders.get("/api/cart-products/owner@example.com"))
-                    .andExpect(status().isForbidden());
-            verify(cartProductService, times(0)).findCartProductsByUserEmail("owner@example.com");
+        @WithMockUser(username = notCartOwnerEmail, authorities = "Everyone")
+        void shouldReturnForbiddenForNotOwner() throws Exception {
+            testForbiddenAccess();
         }
 
         @Test
-        @DisplayName("When anonymous trying to access")
         @WithAnonymousUser
-        void getCartProductsAnonymousTest() throws Exception {
-
-            List<CartProduct> cartProductsList = Arrays.asList(
-                    CartProduct.builder().name("Cart product 1").build(),
-                    CartProduct.builder().name("Cart product 2").build()
-            );
-
-            when(cartProductService.findCartProductsByUserEmail("owner@example.com")).thenReturn(cartProductsList);
-
-
-            mockMvc.perform(MockMvcRequestBuilders.get("/api/cart-products/owner@example.com"))
-                    .andExpect(status().isForbidden());
-            verify(cartProductService, times(0)).findCartProductsByUserEmail("owner@example.com");
+        void shouldReturnForbiddenForAnonymousUser() throws Exception {
+            testForbiddenAccess();
         }
     }
-
 }
