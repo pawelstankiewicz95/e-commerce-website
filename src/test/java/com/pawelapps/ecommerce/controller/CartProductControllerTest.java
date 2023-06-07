@@ -90,4 +90,52 @@ public class CartProductControllerTest {
             testForbiddenAccess();
         }
     }
+
+    @Nested
+    class saveCartProductTest {
+
+        CartProductDto cartProductDto;
+        CartProduct cartProduct;
+
+        @BeforeEach
+        void setUp() {
+            cartProductDto = CartProductDto.builder().name("Cart Product 1").quantity(10).build();
+            cartProduct = CartProduct.builder().name(cartProductDto.getName()).quantity(cartProductDto.getQuantity()).build();
+        }
+
+        private void testForbiddenAccess() throws Exception {
+            when(cartProductService.saveCartProductToCart(any(CartProductDto.class), eq(cartOwnerEmail))).thenReturn(cartProduct);
+
+            mockMvc.perform(MockMvcRequestBuilders.post("/api/cart-products/" + cartOwnerEmail)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(cartProductDto)))
+                    .andExpect(status().isForbidden());
+            verify(cartProductService, times(0)).saveCartProductToCart(any(CartProductDto.class), eq(cartOwnerEmail));
+        }
+
+        @Test
+        @WithMockUser(username = cartOwnerEmail)
+        void shouldSaveCartProductForCartOwner() throws Exception {
+            when(cartProductService.saveCartProductToCart(any(CartProductDto.class), eq(cartOwnerEmail))).thenReturn(cartProduct);
+
+            mockMvc.perform(MockMvcRequestBuilders.post("/api/cart-products/" + cartOwnerEmail)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(cartProductDto)))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.name", is("Cart Product 1")));
+            verify(cartProductService, times(1)).saveCartProductToCart(any(CartProductDto.class), eq(cartOwnerEmail));
+        }
+
+        @Test
+        @WithMockUser(username = notCartOwnerEmail)
+        void shouldReturnForbiddenForNotOwner() throws Exception {
+            testForbiddenAccess();
+        }
+
+        @Test
+        @WithMockUser(username = notCartOwnerEmail)
+        void shouldReturnForbiddenForAnonymousUser() throws Exception {
+            testForbiddenAccess();
+        }
+    }
 }
