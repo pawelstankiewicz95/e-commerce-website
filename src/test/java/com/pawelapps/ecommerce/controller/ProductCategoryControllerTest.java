@@ -71,9 +71,7 @@ public class ProductCategoryControllerTest {
     @DisplayName("When creating product category")
     class CreateProductCategoryTest {
 
-        @Test
-        @DisplayName("When anonymous wants to access")
-        void createProductCategoryAsAnonymous() throws Exception {
+        private void testForbiddenAccess() throws Exception {
             productCategory = ProductCategory.builder().categoryName("Category 1").build();
 
             when(productCategoryService.createProductCategory(any(ProductCategory.class))).thenReturn(productCategory);
@@ -87,25 +85,20 @@ public class ProductCategoryControllerTest {
         }
 
         @Test
-        @DisplayName("When unauthorized user wants to access")
+        @WithAnonymousUser
+        void shouldReturnForbiddenForAnonymousUser() throws Exception {
+            testForbiddenAccess();
+        }
+
+        @Test
         @WithMockUser(authorities = "user")
-        void createProductCategoryAsUnauthorizedUser() throws Exception {
-            productCategory = ProductCategory.builder().categoryName("Category 1").build();
-
-            when(productCategoryService.createProductCategory(any(ProductCategory.class))).thenReturn(productCategory);
-
-            mockMvc.perform(MockMvcRequestBuilders.post("/api/product-categories")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(productCategory)))
-                    .andExpect(status().isForbidden());
-
-            verify(productCategoryService, times(0)).updateProductCategory(any(ProductCategory.class));
+        void shouldReturnForbiddenForNotAuthorizedUser() throws Exception {
+            testForbiddenAccess();
         }
 
         @Test
-        @DisplayName("When authorized user wants to access")
         @WithMockUser(authorities = "admin")
-        void createProductCategoryAsAuthorizedUser() throws Exception {
+        void shouldCreateCategoryForAuthorizedUser() throws Exception {
             productCategory = ProductCategory.builder().categoryName("Category 1").build();
 
             when(productCategoryService.createProductCategory(any(ProductCategory.class))).thenReturn(productCategory);
@@ -126,40 +119,35 @@ public class ProductCategoryControllerTest {
     class UpdateProductTests {
 
         @BeforeEach
-        void setup(){
+        void setup() {
             productCategory = ProductCategory.builder().categoryName("Category 1").build();
         }
 
+        private void testForbiddenAccess() throws Exception {
+            when(productCategoryService.updateProductCategory(any(ProductCategory.class))).thenReturn(productCategory);
+
+            mockMvc.perform(MockMvcRequestBuilders.put("/api/product-categories")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(productCategory)))
+                    .andExpect(status().isForbidden());
+            verify(productCategoryService, times(0)).updateProductCategory(any(ProductCategory.class));
+        }
+
         @Test
-        @DisplayName("When anonymous user wants to access")
         @WithAnonymousUser
-        void updateProductCategoryTestAsAnonymous() throws Exception {
-            when(productCategoryService.updateProductCategory(any(ProductCategory.class))).thenReturn(productCategory);
-
-            mockMvc.perform(MockMvcRequestBuilders.put("/api/product-categories")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(productCategory)))
-                    .andExpect(status().isForbidden());
-            verify(productCategoryService, times(0)).updateProductCategory(any(ProductCategory.class));
+        void shouldReturnForbiddenForAnonymousUser() throws Exception {
+            testForbiddenAccess();
         }
 
         @Test
-        @DisplayName("When unauthorized user wants to access")
         @WithMockUser(authorities = "user")
-        void updateProductCategoryTestAsUnauthorized() throws Exception {
-            when(productCategoryService.updateProductCategory(any(ProductCategory.class))).thenReturn(productCategory);
-
-            mockMvc.perform(MockMvcRequestBuilders.put("/api/product-categories")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(productCategory)))
-                    .andExpect(status().isForbidden());
-            verify(productCategoryService, times(0)).updateProductCategory(any(ProductCategory.class));
+        void shouldReturnForbiddenForUnauthorizedUser() throws Exception {
+            testForbiddenAccess();
         }
 
         @Test
-        @DisplayName("When authorized user wants to access")
         @WithMockUser(authorities = "admin")
-        void updateProductCategoryTestAsAuthorized() throws Exception {
+        void shouldUpdateCategoryForAdmin() throws Exception {
             when(productCategoryService.updateProductCategory(any(ProductCategory.class))).thenReturn(productCategory);
 
             mockMvc.perform(MockMvcRequestBuilders.put("/api/product-categories")
