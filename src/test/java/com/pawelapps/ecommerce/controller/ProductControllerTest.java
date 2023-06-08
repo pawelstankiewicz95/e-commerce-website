@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -45,7 +46,6 @@ public class ProductControllerTest {
 
 
     @Test
-    @DisplayName("when getting all products")
     void getAllProductsTest() throws Exception {
 
         List<Product> productList = Arrays.asList(
@@ -76,7 +76,6 @@ public class ProductControllerTest {
     }
 
     @Nested
-    @DisplayName("When creating product")
     class CreateProductTest {
 
         @BeforeEach
@@ -88,9 +87,7 @@ public class ProductControllerTest {
                     .build();
         }
 
-        @Test
-        @DisplayName("When anonymous wants to access")
-        void createProductAsAnonymous() throws Exception {
+        private void testAccessForbiddenForCreatingProduct() throws Exception {
             when(productService.createProduct(any(Product.class))).thenReturn(product);
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/products")
@@ -102,23 +99,20 @@ public class ProductControllerTest {
         }
 
         @Test
-        @DisplayName("When unauthorized user wants to access")
+        @WithAnonymousUser
+        void shouldReturnForbiddenForAnonymous() throws Exception {
+            testAccessForbiddenForCreatingProduct();
+        }
+
+        @Test
         @WithMockUser(authorities = "user")
-        void createProductAsUnauthorizedUser() throws Exception {
-            when(productService.createProduct(any(Product.class))).thenReturn(product);
-
-            mockMvc.perform(MockMvcRequestBuilders.post("/api/products")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(product)))
-                    .andExpect(status().isForbidden());
-
-            verify(productService, times(0)).updateProduct(any(Product.class));
+        void shouldReturnForbiddenForNotAuthorizedUser() throws Exception {
+            testAccessForbiddenForCreatingProduct();
         }
 
         @Test
-        @DisplayName("When authorized user wants to access")
         @WithMockUser(authorities = "admin")
-        void createProductAsAuthorizedUser() throws Exception {
+        void shouldCreateProductForAuthorizedUser() throws Exception {
             when(productService.createProduct(any(Product.class))).thenReturn(product);
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/products")
@@ -133,8 +127,7 @@ public class ProductControllerTest {
     }
 
     @Nested
-    @DisplayName("When updating product")
-    class UpdateProductTests {
+    class UpdateProductTest {
 
         @BeforeEach
         void setUp() {
@@ -147,9 +140,7 @@ public class ProductControllerTest {
 
         }
 
-        @Test
-        @DisplayName("When anonymous user wants to access")
-        void updateProductTestAsAnonymous() throws Exception {
+        private void testAccessForbiddenForUpdatingProduct() throws Exception {
             when(productService.updateProduct(any(Product.class))).thenReturn(product);
 
             mockMvc.perform(MockMvcRequestBuilders.put("/api/products")
@@ -160,22 +151,20 @@ public class ProductControllerTest {
         }
 
         @Test
-        @DisplayName("When unauthorized user wants to access")
+        @WithAnonymousUser
+        void shouldReturnForbiddenForAnonymousUser() throws Exception {
+            testAccessForbiddenForUpdatingProduct();
+        }
+
+        @Test
         @WithMockUser(authorities = "user")
-        void updateProductTestAsUnauthorized() throws Exception {
-            when(productService.updateProduct(any(Product.class))).thenReturn(product);
-
-            mockMvc.perform(MockMvcRequestBuilders.put("/api/products")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(product)))
-                    .andExpect(status().isForbidden());
-            verify(productService, times(0)).updateProduct(any(Product.class));
+        void shouldReturnForbiddenForNotAuthorizedUser() throws Exception {
+            testAccessForbiddenForUpdatingProduct();
         }
 
         @Test
-        @DisplayName("When authorized user wants to access")
         @WithMockUser(authorities = "admin")
-        void updateProductTestAsAuthorized() throws Exception {
+        void shouldUpdateProductForAuthorizedUser() throws Exception {
             when(productService.updateProduct(any(Product.class))).thenReturn(product);
 
             mockMvc.perform(MockMvcRequestBuilders.put("/api/products")
@@ -191,7 +180,6 @@ public class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("when getting by name or sku")
     void getProductsByNameOrSkuTest() throws Exception {
         List<Product> testProducts = Arrays.asList(
                 Product.builder().id(1L).name("Product 1").sku("123").build(),
@@ -212,24 +200,26 @@ public class ProductControllerTest {
 
     @Test
     void getProductByIdTest() throws Exception {
+
+        Long productId = 123L;
         product = Product.builder()
-                .id(123L)
+                .id(productId)
                 .sku("123")
                 .name("Product 1")
                 .description("Description 1")
                 .build();
 
-        when(productService.getProductById(123L)).thenReturn(product);
+        when(productService.getProductById(eq(productId))).thenReturn(product);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/products/{id}", 123))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/products/{id}", productId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                //  .andExpect(jsonPath("$.id", 123))
+                .andExpect(jsonPath("$.id", is(123)))
                 .andExpect(jsonPath("$.sku", is("123")))
                 .andExpect(jsonPath("$.name", is("Product 1")))
                 .andExpect(jsonPath("$.description", is("Description 1")));
 
-        verify(productService, times(1)).getProductById(123L);
+        verify(productService, times(1)).getProductById(eq(productId));
 
     }
 }
