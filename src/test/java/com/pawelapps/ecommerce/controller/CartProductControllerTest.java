@@ -43,7 +43,7 @@ public class CartProductControllerTest {
     final String notCartOwnerEmail = "notowner@example.com";
 
     @Nested
-    class getCartProductsByUserEmailTest {
+    class GetCartProductsByUserEmailTest {
 
         List<CartProduct> cartProductsList;
 
@@ -55,7 +55,7 @@ public class CartProductControllerTest {
             );
         }
 
-        private void testForbiddenAccess() throws Exception {
+        private void testForbiddenAccessWhenGettingCartProducts() throws Exception {
             when(cartProductService.findCartProductsByUserEmail(cartOwnerEmail)).thenReturn(cartProductsList);
 
             mockMvc.perform(MockMvcRequestBuilders.get("/api/cart-products/" + cartOwnerEmail))
@@ -81,18 +81,18 @@ public class CartProductControllerTest {
         @Test
         @WithMockUser(username = notCartOwnerEmail, authorities = "Everyone")
         void shouldReturnForbiddenForNotOwner() throws Exception {
-            testForbiddenAccess();
+            testForbiddenAccessWhenGettingCartProducts();
         }
 
         @Test
         @WithAnonymousUser
         void shouldReturnForbiddenForAnonymousUser() throws Exception {
-            testForbiddenAccess();
+            testForbiddenAccessWhenGettingCartProducts();
         }
     }
 
     @Nested
-    class saveCartProductTest {
+    class SaveCartProductTest {
 
         CartProductDto cartProductDto;
         CartProduct cartProduct;
@@ -103,7 +103,7 @@ public class CartProductControllerTest {
             cartProduct = CartProduct.builder().name(cartProductDto.getName()).quantity(cartProductDto.getQuantity()).build();
         }
 
-        private void testForbiddenAccess() throws Exception {
+        private void testForbiddenAccessWhenSavingCartProduct() throws Exception {
             when(cartProductService.saveCartProductToCart(any(CartProductDto.class), eq(cartOwnerEmail))).thenReturn(cartProduct);
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/cart-products/" + cartOwnerEmail)
@@ -129,13 +129,155 @@ public class CartProductControllerTest {
         @Test
         @WithMockUser(username = notCartOwnerEmail)
         void shouldReturnForbiddenForNotOwner() throws Exception {
-            testForbiddenAccess();
+            testForbiddenAccessWhenSavingCartProduct();
         }
 
         @Test
         @WithMockUser(username = notCartOwnerEmail)
         void shouldReturnForbiddenForAnonymousUser() throws Exception {
-            testForbiddenAccess();
+            testForbiddenAccessWhenSavingCartProduct();
+        }
+    }
+
+    @Nested
+    class IncreaseCartProductQuantityByOneTest {
+        Long cartProductId = 123L;
+
+        private void testForbiddenAccessWhenIncreasingCartProductQuantity() throws Exception {
+            when(cartProductService.increaseCartProductQuantityByOne(eq(cartOwnerEmail), eq(cartProductId))).thenReturn(1);
+
+            mockMvc.perform(MockMvcRequestBuilders.put("/api/cart-products/increase/{userEmail}/{productId}", cartOwnerEmail, cartProductId)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isForbidden());
+
+            verify(cartProductService, times(0)).increaseCartProductQuantityByOne(eq(cartOwnerEmail), eq(cartProductId));
+        }
+
+        @Test
+        @WithMockUser(username = cartOwnerEmail)
+        void shouldIncreaseCartProductQuantityForCartOwner() throws Exception {
+            when(cartProductService.increaseCartProductQuantityByOne(eq(cartOwnerEmail), eq(cartProductId))).thenReturn(1);
+
+            mockMvc.perform(MockMvcRequestBuilders.put("/api/cart-products/increase/{userEmail}/{productId}", cartOwnerEmail, cartProductId)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string("1"));
+
+            verify(cartProductService, times(1)).increaseCartProductQuantityByOne(eq(cartOwnerEmail), eq(cartProductId));
+        }
+
+        @Test
+        @WithMockUser(username = notCartOwnerEmail)
+        void shouldReturnForbiddenForNotOwner() throws Exception {
+            testForbiddenAccessWhenIncreasingCartProductQuantity();
+        }
+
+        @Test
+        @WithAnonymousUser
+        void shouldReturnForbiddenForAnonymousUser() throws Exception {
+            testForbiddenAccessWhenIncreasingCartProductQuantity();
+        }
+    }
+
+    @Nested
+    class DecreaseCartProductQuantityByOneTest {
+        Long cartProductId = 123L;
+
+        private void testForbiddenAccessWhenIncreasingCartProductQuantity() throws Exception {
+            when(cartProductService.decreaseCartProductQuantityByOne(eq(cartOwnerEmail), eq(cartProductId))).thenReturn(1);
+
+            mockMvc.perform(MockMvcRequestBuilders.put("/api/cart-products/decrease/{userEmail}/{productId}", cartOwnerEmail, cartProductId)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isForbidden());
+
+            verify(cartProductService, times(0)).decreaseCartProductQuantityByOne(eq(cartOwnerEmail), eq(cartProductId));
+        }
+
+        @Test
+        @WithMockUser(username = cartOwnerEmail)
+        void shouldDecreaseCartProductQuantityForCartOwner() throws Exception {
+            when(cartProductService.decreaseCartProductQuantityByOne(eq(cartOwnerEmail), eq(cartProductId))).thenReturn(1);
+
+            mockMvc.perform(MockMvcRequestBuilders.put("/api/cart-products/decrease/{userEmail}/{productId}", cartOwnerEmail, cartProductId)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string("1"));
+
+            verify(cartProductService, times(1)).decreaseCartProductQuantityByOne(eq(cartOwnerEmail), eq(cartProductId));
+        }
+
+        @Test
+        @WithMockUser(username = notCartOwnerEmail)
+        void shouldReturnForbiddenForNotOwner() throws Exception {
+            testForbiddenAccessWhenIncreasingCartProductQuantity();
+        }
+
+        @Test
+        @WithAnonymousUser
+        void shouldReturnForbiddenForAnonymousUser() throws Exception {
+            testForbiddenAccessWhenIncreasingCartProductQuantity();
+        }
+    }
+
+    @Nested
+    class DeleteAllCartProductsByUserEmailTest {
+        Long cartProductId = 123L;
+
+        private void testForbiddenAccessForDeletingAllCartProducts() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.delete("/api/cart-products/{userEmail}", cartOwnerEmail))
+                    .andExpect(status().isForbidden());
+            verify(cartProductService, times(0)).deleteAllCartProductsByUserEmail(eq(cartOwnerEmail));
+        }
+
+        @Test
+        @WithMockUser(username = cartOwnerEmail)
+        void shouldDeleteAllProductsForCartOwner() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.delete("/api/cart-products/{userEmail}", cartOwnerEmail))
+                    .andExpect(status().isOk());
+            verify(cartProductService, times(1)).deleteAllCartProductsByUserEmail(eq(cartOwnerEmail));
+        }
+
+        @Test
+        @WithMockUser(username = notCartOwnerEmail)
+        void shouldReturnForbiddenForNotCartOwner() throws Exception {
+            testForbiddenAccessForDeletingAllCartProducts();
+        }
+
+        @Test
+        @WithAnonymousUser
+        void shouldReturnForbiddenForAnonymousUser() throws Exception {
+            testForbiddenAccessForDeletingAllCartProducts();
+        }
+    }
+
+    @Nested
+    class DeleteCartProductByUserEmailAndProductIdTest {
+        Long cartProductId = 123L;
+
+        private void testForbiddenAccessForDeleteCartProduct() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.delete("/api/cart-products/{userEmail}/{productId}", cartOwnerEmail, cartProductId))
+                    .andExpect(status().isForbidden());
+            verify(cartProductService, times(0)).deleteCartProduct(eq(cartOwnerEmail), eq(cartProductId));
+        }
+
+        @Test
+        @WithMockUser(username = cartOwnerEmail)
+        void shouldDeleteCartProductForCartOwner() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.delete("/api/cart-products/{userEmail}/{productId}", cartOwnerEmail, cartProductId))
+                    .andExpect(status().isOk());
+            verify(cartProductService, times(1)).deleteCartProduct(eq(cartOwnerEmail), eq(cartProductId));
+        }
+
+        @Test
+        @WithMockUser(username = notCartOwnerEmail)
+        void shouldReturnForbiddenForNotCartOwner() throws Exception {
+            testForbiddenAccessForDeleteCartProduct();
+        }
+
+        @Test
+        @WithAnonymousUser
+        void shouldReturnForbiddenForAnonymousUser() throws Exception {
+            testForbiddenAccessForDeleteCartProduct();
         }
     }
 }
