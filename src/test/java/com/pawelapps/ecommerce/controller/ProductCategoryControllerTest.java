@@ -68,7 +68,6 @@ public class ProductCategoryControllerTest {
     }
 
     @Nested
-    @DisplayName("When creating product category")
     class CreateProductCategoryTest {
 
         private void testForbiddenAccess() throws Exception {
@@ -115,8 +114,7 @@ public class ProductCategoryControllerTest {
     }
 
     @Nested
-    @DisplayName("When updating product category")
-    class UpdateProductTests {
+    class UpdateProductTest {
 
         @BeforeEach
         void setup() {
@@ -172,6 +170,39 @@ public class ProductCategoryControllerTest {
                 .andExpect(jsonPath("$.categoryName", is("Category 1")));
 
         verify(productCategoryService, times(1)).getProductCategoryById(123L);
+    }
 
+    @Nested
+    class DeleteProductCategoryByIdTest {
+
+        Long categoryId = 123L;
+
+        private void testForbiddenAccessForDeletingCategoryById() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.delete("/api/product-categories/{id}", categoryId).contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isForbidden());
+
+            verify(productCategoryService, times(0)).deleteProductCategoryById(eq(categoryId));
+        }
+
+        @Test
+        @WithMockUser(authorities = "admin")
+        void shouldDeleteProductCategoryForAdmin() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.delete("/api/product-categories/{id}", categoryId).contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk());
+
+            verify(productCategoryService, times(1)).deleteProductCategoryById(eq(categoryId));
+        }
+
+        @Test
+        @WithMockUser(authorities = "Everyone")
+        void shouldReturnForbiddenForNotAuthorizedUser() throws Exception {
+            testForbiddenAccessForDeletingCategoryById();
+        }
+
+        @Test
+        @WithAnonymousUser
+        void shouldReturnForbiddenForAnonymousUser() throws Exception {
+            testForbiddenAccessForDeletingCategoryById();
+        }
     }
 }
