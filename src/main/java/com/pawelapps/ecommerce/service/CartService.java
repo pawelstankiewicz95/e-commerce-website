@@ -4,7 +4,6 @@ import com.pawelapps.ecommerce.dto.CartDto;
 import com.pawelapps.ecommerce.entity.Cart;
 
 public interface CartService {
-    Cart saveCart(CartDto cartDto);
-    CartDto getCartByUserEmail(String email);
-    void deleteCartByUserEmail(String email);
+    CartDto getCartByUserEmail(String userEmail);
+    void deleteCartByUserEmail(String userEmail);
 }
