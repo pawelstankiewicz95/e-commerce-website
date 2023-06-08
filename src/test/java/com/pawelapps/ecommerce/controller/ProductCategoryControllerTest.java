@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pawelapps.ecommerce.configuration.SecurityConfiguration;
 import com.pawelapps.ecommerce.entity.ProductCategory;
 import com.pawelapps.ecommerce.service.ProductCategoryService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -66,12 +68,9 @@ public class ProductCategoryControllerTest {
     }
 
     @Nested
-    @DisplayName("When creating product category")
     class CreateProductCategoryTest {
 
-        @Test
-        @DisplayName("When anonymous wants to access")
-        void createProductCategoryAsAnonymous() throws Exception {
+        private void testForbiddenAccess() throws Exception {
             productCategory = ProductCategory.builder().categoryName("Category 1").build();
 
             when(productCategoryService.createProductCategory(any(ProductCategory.class))).thenReturn(productCategory);
@@ -85,25 +84,20 @@ public class ProductCategoryControllerTest {
         }
 
         @Test
-        @DisplayName("When unauthorized user wants to access")
+        @WithAnonymousUser
+        void shouldReturnForbiddenForAnonymousUser() throws Exception {
+            testForbiddenAccess();
+        }
+
+        @Test
         @WithMockUser(authorities = "user")
-        void createProductCategoryAsUnauthorizedUser() throws Exception {
-            productCategory = ProductCategory.builder().categoryName("Category 1").build();
-
-            when(productCategoryService.createProductCategory(any(ProductCategory.class))).thenReturn(productCategory);
-
-            mockMvc.perform(MockMvcRequestBuilders.post("/api/product-categories")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(productCategory)))
-                    .andExpect(status().isForbidden());
-
-            verify(productCategoryService, times(0)).updateProductCategory(any(ProductCategory.class));
+        void shouldReturnForbiddenForNotAuthorizedUser() throws Exception {
+            testForbiddenAccess();
         }
 
         @Test
-        @DisplayName("When authorized user wants to access")
         @WithMockUser(authorities = "admin")
-        void createProductCategoryAsAuthorizedUser() throws Exception {
+        void shouldCreateCategoryForAuthorizedUser() throws Exception {
             productCategory = ProductCategory.builder().categoryName("Category 1").build();
 
             when(productCategoryService.createProductCategory(any(ProductCategory.class))).thenReturn(productCategory);
@@ -120,14 +114,14 @@ public class ProductCategoryControllerTest {
     }
 
     @Nested
-    @DisplayName("When updating product category")
-    class UpdateProductTests {
+    class UpdateProductTest {
 
-        @Test
-        @DisplayName("When anonymous user wants to access")
-        void updateProductCategoryTestAsAnonymous() throws Exception {
+        @BeforeEach
+        void setup() {
             productCategory = ProductCategory.builder().categoryName("Category 1").build();
+        }
 
+        private void testForbiddenAccess() throws Exception {
             when(productCategoryService.updateProductCategory(any(ProductCategory.class))).thenReturn(productCategory);
 
             mockMvc.perform(MockMvcRequestBuilders.put("/api/product-categories")
@@ -138,26 +132,20 @@ public class ProductCategoryControllerTest {
         }
 
         @Test
-        @DisplayName("When unauthorized user wants to access")
+        @WithAnonymousUser
+        void shouldReturnForbiddenForAnonymousUser() throws Exception {
+            testForbiddenAccess();
+        }
+
+        @Test
         @WithMockUser(authorities = "user")
-        void updateProductCategoryTestAsUnauthorized() throws Exception {
-            productCategory = ProductCategory.builder().categoryName("Category 1").build();
-
-            when(productCategoryService.updateProductCategory(any(ProductCategory.class))).thenReturn(productCategory);
-
-            mockMvc.perform(MockMvcRequestBuilders.put("/api/product-categories")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(productCategory)))
-                    .andExpect(status().isForbidden());
-            verify(productCategoryService, times(0)).updateProductCategory(any(ProductCategory.class));
+        void shouldReturnForbiddenForUnauthorizedUser() throws Exception {
+            testForbiddenAccess();
         }
 
         @Test
-        @DisplayName("When authorized user wants to access")
         @WithMockUser(authorities = "admin")
-        void updateProductCategoryTestAsAuthorized() throws Exception {
-            productCategory = ProductCategory.builder().categoryName("Category 1").build();
-
+        void shouldUpdateCategoryForAdmin() throws Exception {
             when(productCategoryService.updateProductCategory(any(ProductCategory.class))).thenReturn(productCategory);
 
             mockMvc.perform(MockMvcRequestBuilders.put("/api/product-categories")
@@ -182,6 +170,39 @@ public class ProductCategoryControllerTest {
                 .andExpect(jsonPath("$.categoryName", is("Category 1")));
 
         verify(productCategoryService, times(1)).getProductCategoryById(123L);
+    }
 
+    @Nested
+    class DeleteProductCategoryByIdTest {
+
+        Long categoryId = 123L;
+
+        private void testForbiddenAccessForDeletingCategoryById() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.delete("/api/product-categories/{id}", categoryId).contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isForbidden());
+
+            verify(productCategoryService, times(0)).deleteProductCategoryById(eq(categoryId));
+        }
+
+        @Test
+        @WithMockUser(authorities = "admin")
+        void shouldDeleteProductCategoryForAdmin() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.delete("/api/product-categories/{id}", categoryId).contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk());
+
+            verify(productCategoryService, times(1)).deleteProductCategoryById(eq(categoryId));
+        }
+
+        @Test
+        @WithMockUser(authorities = "Everyone")
+        void shouldReturnForbiddenForNotAuthorizedUser() throws Exception {
+            testForbiddenAccessForDeletingCategoryById();
+        }
+
+        @Test
+        @WithAnonymousUser
+        void shouldReturnForbiddenForAnonymousUser() throws Exception {
+            testForbiddenAccessForDeletingCategoryById();
+        }
     }
 }
