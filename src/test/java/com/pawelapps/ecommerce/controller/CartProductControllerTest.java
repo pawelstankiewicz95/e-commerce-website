@@ -1,6 +1,7 @@
 package com.pawelapps.ecommerce.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pawelapps.ecommerce.configuration.SecurityConfiguration;
 import com.pawelapps.ecommerce.dto.CartProductDto;
 import com.pawelapps.ecommerce.entity.CartProduct;
 import com.pawelapps.ecommerce.service.CartProductService;
@@ -9,8 +10,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -26,7 +29,8 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
-@SpringBootTest
+@WebMvcTest(CartProductController.class)
+@Import(SecurityConfiguration.class)
 @AutoConfigureMockMvc
 public class CartProductControllerTest {
 
