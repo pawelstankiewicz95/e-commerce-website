@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
@@ -24,20 +25,8 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    @Transactional
-    public Cart saveCart(CartDto cartDto) {
-        User user = cartDto.getUser();
-        Set<CartProduct> cartProducts = cartDto.getCartProducts();
-        Cart cart = Cart.builder().user(user).build();
-        cartProducts.forEach(cartProduct -> cart.addCartProduct(cartProduct));
-        return cartRepository.save(cart);
-    }
-
-    @Override
-    @Transactional
-    @PreAuthorize("principal.subject == #email")
-    public CartDto getCartByUserEmail(String email) {
-        Cart cartFromDb = cartRepository.findByUserEmail(email);
+    public CartDto getCartByUserEmail(String userEmail) {
+        Cart cartFromDb = cartRepository.findByUserEmail(userEmail);
 
         if (cartFromDb != null) {
             Set<CartProduct> cartProductsFromDb = cartFromDb.getCartProducts();
@@ -52,10 +41,8 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    @Transactional
-    @PreAuthorize("principal.subject == #email")
-    public void deleteCartByUserEmail(String email) {
-        cartRepository.deleteByUserEmail(email);
+    public void deleteCartByUserEmail(String userEmail) {
+        cartRepository.deleteByUserEmail(userEmail);
     }
 
 }

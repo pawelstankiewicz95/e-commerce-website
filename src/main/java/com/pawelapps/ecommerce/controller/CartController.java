@@ -5,7 +5,10 @@ import com.pawelapps.ecommerce.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api")
@@ -17,21 +20,17 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    @PostMapping("/cart")
-    public ResponseEntity<CartDto> saveCart(@RequestBody CartDto cartDto) {
-        cartService.saveCart(cartDto);
-        return new ResponseEntity<>(cartDto, HttpStatus.CREATED);
-    }
-
     @GetMapping("/cart/{userEmail}")
-    public ResponseEntity<CartDto> getCartByUserEmail(@PathVariable("userEmail") String email) {
-        CartDto cartDto = cartService.getCartByUserEmail(email);
+    @PreAuthorize("#principal == #userEmail")
+    public ResponseEntity<CartDto> getCartByUserEmail(@PathVariable("userEmail") String userEmail, Principal principal) {
+        CartDto cartDto = cartService.getCartByUserEmail(userEmail);
         return new ResponseEntity<>(cartDto, HttpStatus.OK);
     }
 
     @DeleteMapping("cart/{userEmail}")
-    public ResponseEntity<?> deleteCartByUserEmail(@PathVariable("userEmail") String email){
-        cartService.deleteCartByUserEmail(email);
+    @PreAuthorize("#principal == #userEmail")
+    public ResponseEntity<?> deleteCartByUserEmail(@PathVariable("userEmail") String userEmail, Principal principal) {
+        cartService.deleteCartByUserEmail(userEmail);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

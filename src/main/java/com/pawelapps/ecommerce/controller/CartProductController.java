@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -25,56 +26,44 @@ public class CartProductController {
     }
 
     @GetMapping("/cart-products/{userEmail}")
-    public ResponseEntity<List<CartProduct>> getCartProductsByUserEmail(@PathVariable("userEmail") String email, Principal principal) {
-        if (principal == null || !principal.getName().equals(email)) {
-            throw new AccessDeniedException("Access denied");
-        }
-        List<CartProduct> cartProducts = cartProductService.findCartProductsByUserEmail(email);
+    @PreAuthorize("#principal?.name == #userEmail")
+    public ResponseEntity<List<CartProduct>> getCartProductsByUserEmail(@PathVariable("userEmail") String userEmail, Principal principal) {
+        List<CartProduct> cartProducts = cartProductService.findCartProductsByUserEmail(userEmail);
         return new ResponseEntity<>(cartProducts, HttpStatus.OK);
     }
 
     @PutMapping("/cart-products/increase/{userEmail}/{productId}")
-    public ResponseEntity<Integer> increaseCartProductQuantityByOne(@PathVariable("userEmail") String email, @PathVariable("productId") Long id, Principal principal) throws AccessDeniedException {
-        if (principal == null || !principal.getName().equals(email)) {
-            throw new AccessDeniedException("Access denied");
-        }
-        Integer updatedRows = cartProductService.increaseCartProductQuantityByOne(email, id);
+    @PreAuthorize("#principal?.name == #userEmail")
+    public ResponseEntity<Integer> increaseCartProductQuantityByOne(@PathVariable("userEmail") String userEmail, @PathVariable("productId") Long id, Principal principal) throws AccessDeniedException {
+        Integer updatedRows = cartProductService.increaseCartProductQuantityByOne(userEmail, id);
         return new ResponseEntity<>(updatedRows, HttpStatus.OK);
     }
 
     @PutMapping("/cart-products/decrease/{userEmail}/{productId}")
-    public ResponseEntity<Integer> decreaseCartProductQuantityByOne(@PathVariable("userEmail") String email, @PathVariable("productId") Long id, Principal principal) throws AccessDeniedException {
-        if (principal == null || !principal.getName().equals(email)) {
-            throw new AccessDeniedException("Access denied");
-        }
-        Integer updatedRows = cartProductService.decreaseCartProductQuantityByOne(email, id);
+    @PreAuthorize("#principal?.name == #userEmail")
+    public ResponseEntity<Integer> decreaseCartProductQuantityByOne(@PathVariable("userEmail") String userEmail, @PathVariable("productId") Long id, Principal principal) throws AccessDeniedException {
+        Integer updatedRows = cartProductService.decreaseCartProductQuantityByOne(userEmail, id);
         return new ResponseEntity<>(updatedRows, HttpStatus.OK);
     }
 
     @DeleteMapping("cart-products/{userEmail}")
-    public ResponseEntity<?> deleteAllCartProductsByUserEmail(@PathVariable("userEmail") String email, Principal principal) {
-        if (principal == null || !principal.getName().equals(email)) {
-            throw new AccessDeniedException("Access denied");
-        }
-        cartProductService.deleteAllCartProductsByUserEmail(email);
+    @PreAuthorize("#principal?.name == #userEmail")
+    public ResponseEntity<?> deleteAllCartProductsByUserEmail(@PathVariable("userEmail") String userEmail, Principal principal) {
+        cartProductService.deleteAllCartProductsByUserEmail(userEmail);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("cart-products/{userEmail}/{productId}")
-    public ResponseEntity<?> deleteCartProductByUserEmailAndProductId(@PathVariable("userEmail") String email, @PathVariable("productId") Long id, Principal principal) {
-        if (principal == null || !principal.getName().equals(email)) {
-            throw new AccessDeniedException("Access denied");
-        }
-        cartProductService.deleteCartProduct(email, id);
+    @PreAuthorize("#principal?.name == #userEmail")
+    public ResponseEntity<?> deleteCartProductByUserEmailAndProductId(@PathVariable("userEmail") String userEmail, @PathVariable("productId") Long id, Principal principal) {
+        cartProductService.deleteCartProduct(userEmail, id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("cart-products/{userEmail}")
-    public ResponseEntity<CartProductDto> saveCartProduct(@RequestBody CartProductDto cartProductDto, @PathVariable("userEmail") String email, Principal principal) {
-        if (principal == null || !principal.getName().equals(email)) {
-            throw new AccessDeniedException("Access denied");
-        }
-        cartProductService.saveCartProductToCart(cartProductDto, email);
+    @PreAuthorize("#principal?.name == #userEmail")
+    public ResponseEntity<CartProductDto> saveCartProduct(@RequestBody CartProductDto cartProductDto, @PathVariable("userEmail") String userEmail, Principal principal) {
+        cartProductService.saveCartProductToCart(cartProductDto, userEmail);
         return new ResponseEntity<>(cartProductDto, HttpStatus.CREATED);
     }
 }
