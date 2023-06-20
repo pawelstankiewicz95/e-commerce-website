@@ -16,11 +16,11 @@ import java.math.BigDecimal;
 public class CartProduct {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "surrogate_id")
-    private Long surrogateId;
+    @Column(name = "PK_cart_product_id")
+    private Long cartProductId;
 
-    @Column(name = "cart_product_id")
-    private Long id;
+    @Column(name = "product_id")
+    private Long productId;
 
     @Column(name = "quantity")
     private int quantity;
