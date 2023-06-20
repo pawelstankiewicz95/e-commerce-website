@@ -97,7 +97,7 @@ public class CartProductServiceImpl implements CartProductService {
             entityManager.flush();
         }
         CartProduct cartProduct = CartProduct.builder()
-                .id(cartProductDto.getId())
+                .productId(cartProductDto.getId())
                 .quantity(cartProductDto.getQuantity())
                 .name(cartProductDto.getName())
                 .description(cartProductDto.getDescription())
