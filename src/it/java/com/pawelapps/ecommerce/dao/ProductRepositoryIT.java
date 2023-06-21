@@ -1,84 +1,86 @@
 package com.pawelapps.ecommerce.dao;
 
+import com.pawelapps.ecommerce.BaseIT;
 import com.pawelapps.ecommerce.entity.Product;
 import com.pawelapps.ecommerce.entity.ProductCategory;
-import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+class ProductRepositoryIT extends BaseIT {
 
-@DataJpaTest
-@TestPropertySource("/test-application.properties")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class ProductRepositoryTest {
-
-    @Autowired
-    EntityManager entityManager;
     @Autowired
     ProductRepository productRepository;
 
     @Autowired
-    ProductCategoryRepository productCategoryRepository;
-    ProductCategory productCategory;
-    Product product;
+    static ProductCategoryRepository productCategoryRepository;
+    static ProductCategory productCategory;
 
+    @BeforeAll
+    static void setUp(){
+        productCategory = productCategoryRepository.save(ProductCategory.builder().categoryName("Test Category 1").build());
+    }
 
-    @BeforeEach
-    void setUpDataBase() {
-        productCategory = ProductCategory.builder().categoryName("Cup").build();
-        product = Product.builder()
-                .sku("123456")
-                .name("TestCup")
-                .description("Just testing cup")
-                .unitPrice(BigDecimal.valueOf(24.35))
-                .imageUrl("www.test.com")
-                .active(true)
-                .unitsInStock(10)
-                .dateCreated(LocalDateTime.now())
-                .lastUpdated(LocalDateTime.now())
+    @Test
+    void shouldSaveProduct() {
+        Product savedProduct = productRepository.save(Product.builder()
+                .sku("TEST1")
+                .name("Test Product")
                 .productCategory(productCategory)
-                .build();
-        entityManager.persist(productCategory);
-        entityManager.persist(product);
-        entityManager.flush();
+                .unitsInStock(3)
+                .active(true)
+                .build());
+
+        assertNotNull(savedProduct.getId(), "Id should not be null");
+        assertEquals("TEST1", savedProduct.getSku(), "Product SKU should match");
+        assertEquals("Test Product", savedProduct.getName(), "Product name should match");
+        assertTrue(savedProduct.isActive());
     }
 
     @Test
-    void saveProductTest() {
-        productRepository.save(product);
+    void shouldGetProduct() {
 
-        assertTrue(product.getId() > 0, "Id should be greater than 0");
-    }
+        Product savedProduct = productRepository.save(Product.builder()
+                .sku("TEST2")
+                .name("Test Product 2")
+                .productCategory(productCategory)
+                .unitsInStock(3)
+                .active(true)
+                .build());
 
-    @Test
-    void getProductTest() {
-        Product productFromDatabase = productRepository.findById(1L).orElse(null);
+        Product productFromDatabase = productRepository.findById(savedProduct.getId()).orElse(null);
 
         assertNotNull(productFromDatabase, "productFromDatabase should not be null");
-
-        assertEquals(product, productFromDatabase, "Objects should be the same");
-        assertEquals("123456", productFromDatabase.getSku());
-        assertEquals(productCategory.getCategoryName(), "Cup", "Categories should be equal");
-
+        assertEquals("TEST2", productFromDatabase.getSku(), "Product SKU should match");
+        assertEquals("TEST2", productFromDatabase.getName(), "Product name should match");
     }
 
     @Test
-    void getProductsTest() {
+    void shouldGetAllProducts() {
+        Product savedProduct1 = productRepository.save(Product.builder()
+                .sku("TEST3")
+                .name("Test Product 3")
+                .productCategory(productCategory)
+                .unitsInStock(3)
+                .active(true)
+                .build());
+        Product savedProduct2 = productRepository.save(Product.builder()
+                .sku("TEST4")
+                .name("Test Product 4")
+                .productCategory(productCategory)
+                .unitsInStock(4)
+                .active(false)
+                .build());
+
         List<Product> products = productRepository.findAll();
+
         assertFalse(products.isEmpty(), "List should not be empty");
+        assertTrue(products.size() > 1, "List should have at least two products");
+        assertNotNull(products.stream().filter(p -> p.getId().equals(savedProduct1.getId())).findFirst(),"Should find savedProduct1 by id");
     }
 
     @Test

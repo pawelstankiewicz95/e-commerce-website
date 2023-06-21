@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.MySQLContainer;
 
 @SpringBootTest
@@ -19,7 +20,8 @@ public abstract class BaseIT {
     }
 
     @BeforeAll
-    public static void setUp(){
+    public static void setUpContainer(){
+        mySQLContainer.withClasspathResourceMapping("sql/database.sql", "/docker-entrypoint-initdb.d/init.sql", BindMode.READ_ONLY);
         mySQLContainer.start();
     }
 }
