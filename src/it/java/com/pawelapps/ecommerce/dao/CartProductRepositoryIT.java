@@ -1,5 +1,6 @@
 package com.pawelapps.ecommerce.dao;
 
+import com.pawelapps.ecommerce.BaseIT;
 import com.pawelapps.ecommerce.entity.Cart;
 import com.pawelapps.ecommerce.entity.CartProduct;
 import com.pawelapps.ecommerce.entity.User;
@@ -10,16 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DataJpaTest
-@TestPropertySource("/test-application.properties")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class CartProductRepositoryIT {
+@Transactional
+public class CartProductRepositoryIT extends BaseIT {
 
     @Autowired
     EntityManager entityManager;
@@ -34,24 +34,16 @@ public class CartProductRepositoryIT {
 
     @BeforeEach
     void setUp() {
-        user = new User();
-        user.setEmail("test@email.com");
+        user = User.builder().email("test@example.com").build();
         entityManager.persist(user);
 
-        cart = new Cart();
-        cart.setUser(user);
+        cart = Cart.builder().user(user).build();
         entityManager.persist(cart);
 
-        cartProduct1 = new CartProduct();
-        cartProduct1.setProductId(1L);
-        cartProduct1.setCart(cart);
-        cartProduct1.setQuantity(2);
+        cartProduct1 = CartProduct.builder().cart(cart).name("Test cart product 1").quantity(1).build();
         entityManager.persist(cartProduct1);
 
-        cartProduct2 = new CartProduct();
-        cartProduct2.setProductId(2L);
-        cartProduct2.setCart(cart);
-        cartProduct2.setQuantity(2);
+        cartProduct2 = CartProduct.builder().cart(cart).name("Test cart product 2").quantity(23).build();
         entityManager.persist(cartProduct2);
 
         entityManager.flush();
@@ -59,17 +51,17 @@ public class CartProductRepositoryIT {
 
     @Test
     void testFindCartProductsByUserEmail() {
-        String userEmail = "test@email.com";
+        String userEmail = "test@example.com";
 
         List<CartProduct> cartProducts = cartProductRepository.findCartProductsByUserEmail(userEmail);
 
-        assertEquals(2, cartProducts.size(), "List should have two objects");
+        assertEquals(2, cartProducts.size(), "List should have two cart products");
     }
 
     @Test
     void testIncreaseCartProductQuantityByOne() {
-        String userEmail = "test@email.com";
-        Long cartProductId = 1L;
+        String userEmail = "test@example.com";
+        Long cartProductId = cartProduct1.getCartProductId();
 
         CartProduct cartProductBeforeUpdate = cartProductRepository.findById(cartProductId).orElse(null);
         assertNotNull(cartProductBeforeUpdate, "Object should not be null");
@@ -90,8 +82,8 @@ public class CartProductRepositoryIT {
 
     @Test
     void testDecreaseCartProductQuantityByOne() {
-        String userEmail = "test@email.com";
-        Long cartProductId = 1L;
+        String userEmail = "test@example.com";
+        Long cartProductId = cartProduct1.getCartProductId();
 
         CartProduct cartProductBeforeUpdate = cartProductRepository.findById(cartProductId).orElse(null);
         assertNotNull(cartProductBeforeUpdate, "Object should not be null");
@@ -112,11 +104,11 @@ public class CartProductRepositoryIT {
 
     @Test
     void testDeleteCartProduct() {
-        String userEmail = "test@email.com";
-        Long cartProductId = 1L;
+        String userEmail = "test@example.com";
+        Long cartProductId = cartProduct1.getCartProductId();
 
         CartProduct cartProductFromDb = cartProductRepository.findById(cartProductId).orElse(null);
-        assertNotNull(cartProductFromDb);
+        assertNotNull(cartProductFromDb, "cartProductFromDb should not be empty");
 
         cartProductRepository.deleteCartProduct(userEmail, cartProductId);
         entityManager.flush();
@@ -130,7 +122,7 @@ public class CartProductRepositoryIT {
 
     @Test
     void deleteAllCartProductsByUserEmail() {
-        String userEmail = "test@email.com";
+        String userEmail = "test@example.com";
 
         List<CartProduct> cartProducts = cartProductRepository.findCartProductsByUserEmail(userEmail);
         assertEquals(2, cartProducts.size(), "List should contain 2 items");
@@ -141,7 +133,7 @@ public class CartProductRepositoryIT {
 
         List<CartProduct> listOfCartProductsAfterDelete = cartProductRepository.findCartProductsByUserEmail(userEmail);
 
-        assertTrue(listOfCartProductsAfterDelete.isEmpty());
+        assertTrue(listOfCartProductsAfterDelete.isEmpty(),"List of cart products should be empty");
     }
 }
 
