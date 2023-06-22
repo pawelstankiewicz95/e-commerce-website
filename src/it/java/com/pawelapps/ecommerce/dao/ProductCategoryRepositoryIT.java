@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 @TestPropertySource("/test-application.properties")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class ProductCategoryRepositoryTest {
+public class ProductCategoryRepositoryIT {
 
     @Autowired
     EntityManager entityManager;

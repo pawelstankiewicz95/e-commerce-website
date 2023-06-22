@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestPropertySource("/test-application.properties")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 
-public class OrderRepositoryTest {
+public class OrderRepositoryIT {
 
     @Autowired
     OrderRepository orderRepository;

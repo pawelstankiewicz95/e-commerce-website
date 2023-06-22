@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 @TestPropertySource("/test-application.properties")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class CartProductRepositoryTest {
+public class CartProductRepositoryIT {
 
     @Autowired
     EntityManager entityManager;
@@ -43,13 +43,13 @@ public class CartProductRepositoryTest {
         entityManager.persist(cart);
 
         cartProduct1 = new CartProduct();
-        cartProduct1.setId(1L);
+        cartProduct1.setProductId(1L);
         cartProduct1.setCart(cart);
         cartProduct1.setQuantity(2);
         entityManager.persist(cartProduct1);
 
         cartProduct2 = new CartProduct();
-        cartProduct2.setId(2L);
+        cartProduct2.setProductId(2L);
         cartProduct2.setCart(cart);
         cartProduct2.setQuantity(2);
         entityManager.persist(cartProduct2);
