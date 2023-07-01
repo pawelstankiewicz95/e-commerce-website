@@ -9,4 +9,6 @@ public interface OrderService {
     Order saveOrder(OrderDto orderDto);
 
     List<Order> getAllOrders();
+
+    List<OrderDto> findByCustomerEmail(String email);
 }
