@@ -10,5 +10,7 @@ public interface OrderService {
 
     List<Order> getAllOrders();
 
-    List<OrderDto> findByCustomerEmail(String email);
+    List<OrderDto> findByCustomerEmail(String customerEmail);
+
+    List<OrderDto> findByUserEmail(String userEmail);
 }

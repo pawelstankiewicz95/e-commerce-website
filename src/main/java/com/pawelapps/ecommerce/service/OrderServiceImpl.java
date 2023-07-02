@@ -46,4 +46,11 @@ public class OrderServiceImpl implements OrderService {
         return ordersDto;
     }
 
+    @Override
+    public List<OrderDto> findByUserEmail(String userEmail) {
+        List<Order> orders = orderRepository.findByUserEmail(userEmail);
+        List <OrderDto> ordersDto = orders.stream().map(o -> modelMapper.map(o, OrderDto.class)).collect(Collectors.toList());
+        return ordersDto;
+    }
+
 }
