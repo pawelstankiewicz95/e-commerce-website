@@ -4,7 +4,7 @@ import com.pawelapps.ecommerce.entity.CartProduct;
 import com.pawelapps.ecommerce.entity.User;
 import lombok.*;
 
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -13,5 +13,5 @@ import java.util.Set;
 @Builder
 public class CartDto {
     private User user;
-    private Set<CartProduct> cartProducts;
+    private List<CartProduct> cartProducts;
 }

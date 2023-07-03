@@ -6,7 +6,7 @@ import com.pawelapps.ecommerce.entity.ShippingAddress;
 import com.pawelapps.ecommerce.entity.Summary;
 import lombok.*;
 
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,5 +17,5 @@ public class OrderDto {
     private Customer customer;
     private ShippingAddress shippingAddress;
     private Summary summary;
-    private Set<OrderProduct> orderProducts;
+    private List<OrderProduct> orderProducts;
 }

@@ -1,10 +1,13 @@
 package com.pawelapps.ecommerce.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -34,13 +37,14 @@ public class Customer {
     private String email;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private Set<Order> orders = new HashSet<>();
+    @JsonIgnoreProperties("customer")
+    private List<Order> orders = new ArrayList<>() {
+    };
 
     public void addOrder(Order order) {
         if (order != null) {
             if (orders == null) {
-                orders = new HashSet<>();
+                orders = new ArrayList<>();
             }
             order.setCustomer(this);
             orders.add(order);
