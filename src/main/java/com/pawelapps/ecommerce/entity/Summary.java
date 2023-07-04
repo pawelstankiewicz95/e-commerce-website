@@ -1,5 +1,6 @@
 package com.pawelapps.ecommerce.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,5 +26,6 @@ public class Summary {
     private int totalQuantityOfProducts;
 
     @OneToOne(mappedBy = "summary")
+    @JsonIgnoreProperties("summary")
     private Order order;
 }

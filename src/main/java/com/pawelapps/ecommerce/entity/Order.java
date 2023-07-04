@@ -32,15 +32,17 @@ public class Order {
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @JsonBackReference
+    @JsonIgnoreProperties("orders")
     private User user;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "shipping_address_id", referencedColumnName = "id")
+    @JsonIgnoreProperties("order")
     private ShippingAddress shippingAddress;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "summary_id", referencedColumnName = "id")
+    @JsonIgnoreProperties("order")
     private Summary summary;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)

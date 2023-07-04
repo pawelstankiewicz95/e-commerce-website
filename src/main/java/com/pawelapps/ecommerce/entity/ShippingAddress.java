@@ -1,5 +1,6 @@
 package com.pawelapps.ecommerce.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,5 +31,6 @@ public class ShippingAddress {
     private String zipCode;
 
     @OneToOne(mappedBy = "shippingAddress")
+    @JsonIgnoreProperties("shippingAddress")
     private Order order;
 }
