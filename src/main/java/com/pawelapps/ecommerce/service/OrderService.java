@@ -8,7 +8,7 @@ import java.util.List;
 public interface OrderService {
     Order saveOrder(OrderDto orderDto);
 
-    List<Order> getAllOrders();
+    List<OrderDto> getAllOrders();
 
     List<OrderDto> findByCustomerEmail(String customerEmail);
 
