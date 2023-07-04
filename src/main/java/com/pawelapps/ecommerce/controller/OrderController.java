@@ -26,10 +26,16 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @PostMapping("/purchase")
+    @PostMapping("/orders")
     public ResponseEntity<OrderDto> saveOrder(@RequestBody OrderDto orderDto) {
         orderService.saveOrder(orderDto);
         return new ResponseEntity<>(orderDto, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/orders")
+    public ResponseEntity<List<OrderDto>> getAllOrders() {
+        List<OrderDto> ordersDto = orderService.getAllOrders();
+        return new ResponseEntity<>(ordersDto, HttpStatus.OK);
     }
 
     @PreAuthorize("hasAuthority('admin')")
