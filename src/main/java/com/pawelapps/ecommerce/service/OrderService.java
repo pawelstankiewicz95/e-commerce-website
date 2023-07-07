@@ -13,4 +13,6 @@ public interface OrderService {
     List<OrderDto> findByCustomerEmail(String customerEmail);
 
     List<OrderDto> findByUserEmail(String userEmail);
+
+    OrderDto findById(Long id);
 }

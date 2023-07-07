@@ -33,10 +33,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
-
     @Override
     public List<OrderDto> getAllOrders() {
-        List<Order> orders =  orderRepository.findAll();
+        List<Order> orders = orderRepository.findAll();
         List<OrderDto> ordersDto = orders.stream().map(o -> modelMapper.map(o, OrderDto.class)).collect(Collectors.toList());
         return ordersDto;
 
@@ -52,8 +51,15 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderDto> findByUserEmail(String userEmail) {
         List<Order> orders = orderRepository.findByUserEmail(userEmail);
-        List <OrderDto> ordersDto = orders.stream().map(o -> modelMapper.map(o, OrderDto.class)).collect(Collectors.toList());
+        List<OrderDto> ordersDto = orders.stream().map(o -> modelMapper.map(o, OrderDto.class)).collect(Collectors.toList());
         return ordersDto;
+    }
+
+    @Override
+    public OrderDto findById(Long id) {
+        Order order = this.orderRepository.findById(id).orElseThrow();
+        OrderDto orderDto = modelMapper.map(order, OrderDto.class);
+        return orderDto;
     }
 
 }
