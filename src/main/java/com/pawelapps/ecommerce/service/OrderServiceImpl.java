@@ -31,11 +31,13 @@ public class OrderServiceImpl implements OrderService {
         Customer customer = orderDto.getCustomer();
         ShippingAddress shippingAddress = orderDto.getShippingAddress();
         Summary summary = orderDto.getSummary();
+        User user = orderDto.getUser();
         List<OrderProduct> orderProducts = orderDto.getOrderProducts();
         Order order = Order.builder()
                 .customer(customer)
                 .shippingAddress(shippingAddress)
                 .summary(summary)
+                .user(user)
                 .build();
         orderProducts.forEach(product -> order.addOrderProduct(product));
         return orderRepository.save(order);
