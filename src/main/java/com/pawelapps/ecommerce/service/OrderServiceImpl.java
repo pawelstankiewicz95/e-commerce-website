@@ -28,7 +28,16 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order saveOrder(OrderDto orderDto) {
-        Order order = modelMapper.map(orderDto, Order.class);
+        Customer customer = orderDto.getCustomer();
+        ShippingAddress shippingAddress = orderDto.getShippingAddress();
+        Summary summary = orderDto.getSummary();
+        List<OrderProduct> orderProducts = orderDto.getOrderProducts();
+        Order order = Order.builder()
+                .customer(customer)
+                .shippingAddress(shippingAddress)
+                .summary(summary)
+                .build();
+        orderProducts.forEach(product -> order.addOrderProduct(product));
         return orderRepository.save(order);
     }
 
