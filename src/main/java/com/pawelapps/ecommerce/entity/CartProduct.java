@@ -1,6 +1,7 @@
 package com.pawelapps.ecommerce.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -39,6 +40,6 @@ public class CartProduct {
 
     @ManyToOne(fetch= FetchType.LAZY)
     @JoinColumn(name = "cart_id", referencedColumnName = "id")
-    @JsonBackReference
+    @JsonIgnoreProperties("cart")
     private Cart cart;
 }

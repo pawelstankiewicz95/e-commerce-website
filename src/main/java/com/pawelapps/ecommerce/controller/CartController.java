@@ -21,14 +21,14 @@ public class CartController {
     }
 
     @GetMapping("/cart/{userEmail}")
-    @PreAuthorize("#principal == #userEmail")
+    @PreAuthorize("#principal?.name == #userEmail")
     public ResponseEntity<CartDto> getCartByUserEmail(@PathVariable("userEmail") String userEmail, Principal principal) {
         CartDto cartDto = cartService.getCartByUserEmail(userEmail);
         return new ResponseEntity<>(cartDto, HttpStatus.OK);
     }
 
     @DeleteMapping("cart/{userEmail}")
-    @PreAuthorize("#principal == #userEmail")
+    @PreAuthorize("#principal?.name == #userEmail")
     public ResponseEntity<?> deleteCartByUserEmail(@PathVariable("userEmail") String userEmail, Principal principal) {
         cartService.deleteCartByUserEmail(userEmail);
         return new ResponseEntity<>(HttpStatus.OK);

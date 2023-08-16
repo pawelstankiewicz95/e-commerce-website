@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -91,7 +92,7 @@ public class CartProductServiceImpl implements CartProductService {
         Cart cart = cartRepository.findByUserEmail(userEmail);
         if (cart == null) {
             User user = User.builder().email(userEmail).build();
-            Set<CartProduct> cartProducts = new HashSet<>();
+            List<CartProduct> cartProducts = new ArrayList<>();
             cart = Cart.builder().user(user).cartProducts(cartProducts).build();
             entityManager.persist(cart);
             entityManager.flush();
