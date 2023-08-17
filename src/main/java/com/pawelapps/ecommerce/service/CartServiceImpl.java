@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,8 +30,8 @@ public class CartServiceImpl implements CartService {
         Cart cartFromDb = cartRepository.findByUserEmail(userEmail);
 
         if (cartFromDb != null) {
-            Set<CartProduct> cartProductsFromDb = cartFromDb.getCartProducts();
-            Set<CartProduct> dtoCartProducts = cartProductsFromDb.stream().collect(Collectors.toSet());
+            List<CartProduct> cartProductsFromDb = cartFromDb.getCartProducts();
+            List<CartProduct> dtoCartProducts = cartProductsFromDb.stream().collect(Collectors.toList());
             CartDto cartDto = CartDto.builder()
                     .user(cartFromDb.getUser())
                     .cartProducts(dtoCartProducts).build();

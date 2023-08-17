@@ -1,6 +1,7 @@
 package com.pawelapps.ecommerce.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,6 +37,6 @@ public class OrderProduct {
 
     @ManyToOne
     @JoinColumn(name = "order_id", referencedColumnName = "id")
-    @JsonBackReference
+    @JsonIgnoreProperties("orderProducts")
     private Order order;
 }

@@ -28,15 +28,28 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order saveOrder(OrderDto orderDto) {
-        Order order = modelMapper.map(orderDto, Order.class);
+        Customer customer = orderDto.getCustomer();
+        ShippingAddress shippingAddress = orderDto.getShippingAddress();
+        Summary summary = orderDto.getSummary();
+        User user = orderDto.getUser();
+        List<OrderProduct> orderProducts = orderDto.getOrderProducts();
+        Order order = Order.builder()
+                .customer(customer)
+                .shippingAddress(shippingAddress)
+                .summary(summary)
+                .user(user)
+                .build();
+        orderProducts.forEach(product -> order.addOrderProduct(product));
         return orderRepository.save(order);
     }
 
 
-
     @Override
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+    public List<OrderDto> getAllOrders() {
+        List<Order> orders = orderRepository.findAll();
+        List<OrderDto> ordersDto = orders.stream().map(o -> modelMapper.map(o, OrderDto.class)).collect(Collectors.toList());
+        return ordersDto;
+
     }
 
     @Override
@@ -44,6 +57,20 @@ public class OrderServiceImpl implements OrderService {
         List<Order> orders = orderRepository.findByCustomerEmail(email);
         List<OrderDto> ordersDto = orders.stream().map(o -> modelMapper.map(o, OrderDto.class)).collect(Collectors.toList());
         return ordersDto;
+    }
+
+    @Override
+    public List<OrderDto> findByUserEmail(String userEmail) {
+        List<Order> orders = orderRepository.findByUserEmail(userEmail);
+        List<OrderDto> ordersDto = orders.stream().map(o -> modelMapper.map(o, OrderDto.class)).collect(Collectors.toList());
+        return ordersDto;
+    }
+
+    @Override
+    public OrderDto findById(Long id) {
+        Order order = this.orderRepository.findById(id).orElseThrow();
+        OrderDto orderDto = modelMapper.map(order, OrderDto.class);
+        return orderDto;
     }
 
 }
