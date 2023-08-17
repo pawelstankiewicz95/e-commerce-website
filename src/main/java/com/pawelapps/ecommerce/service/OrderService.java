@@ -6,7 +6,7 @@ import com.pawelapps.ecommerce.entity.Order;
 import java.util.List;
 
 public interface OrderService {
-    Order saveOrder(OrderDto orderDto);
+    OrderDto saveOrder(OrderDto orderDto);
 
     List<OrderDto> getAllOrders();
 

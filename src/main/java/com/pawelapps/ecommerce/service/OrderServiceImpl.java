@@ -27,7 +27,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order saveOrder(OrderDto orderDto) {
+    public OrderDto saveOrder(OrderDto orderDto) {
         Customer customer = orderDto.getCustomer();
         ShippingAddress shippingAddress = orderDto.getShippingAddress();
         Summary summary = orderDto.getSummary();
@@ -40,7 +40,8 @@ public class OrderServiceImpl implements OrderService {
                 .user(user)
                 .build();
         orderProducts.forEach(product -> order.addOrderProduct(product));
-        return orderRepository.save(order);
+        orderRepository.save(order);
+        return orderDto;
     }
 
 
