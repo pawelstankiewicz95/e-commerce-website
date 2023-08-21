@@ -21,7 +21,7 @@ public abstract class BaseIT {
 
     @BeforeAll
     public static void setUpContainer(){
-        mySQLContainer.withClasspathResourceMapping("sql/database.sql", "/docker-entrypoint-initdb.d/init.sql", BindMode.READ_ONLY);
+        mySQLContainer.withClasspathResourceMapping("sql/database-structure.sql", "/docker-entrypoint-initdb.d/init.sql", BindMode.READ_ONLY);
         mySQLContainer.start();
     }
 }
