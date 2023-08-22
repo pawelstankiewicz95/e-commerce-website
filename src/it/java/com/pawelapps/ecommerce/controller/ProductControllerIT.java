@@ -6,6 +6,7 @@ import com.pawelapps.ecommerce.entity.Product;
 import com.pawelapps.ecommerce.entity.ProductCategory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,10 +21,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @AutoConfigureMockMvc
 @Transactional
@@ -93,10 +98,6 @@ public class ProductControllerIT extends BaseIT {
 
         @BeforeEach
         void setUp() {
-            productCategory = ProductCategory.builder().categoryName("Test Category For Creating Products").build();
-            entityManager.persist(productCategory);
-            entityManager.flush();
-
             product = Product.builder()
                     .sku("333222")
                     .name("Created Test Product")
@@ -112,7 +113,7 @@ public class ProductControllerIT extends BaseIT {
                     .build();
         }
 
-        void testAccessForbidden() throws Exception {
+        private void testAccessForbidden() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders.post("/api/products")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(product)))
@@ -141,4 +142,82 @@ public class ProductControllerIT extends BaseIT {
                     .andExpect(jsonPath(("$.sku"), is("333222")));
         }
     }
+
+
+    @Nested
+    class UpdateProductTest {
+        private String sku = "123456";
+
+
+        private Product getProductFromDB(String sku) {
+            TypedQuery<Product> query = entityManager.createQuery(
+                    "SELECT p FROM Product p WHERE p.sku = :sku", Product.class);
+            query.setParameter("sku", sku);
+            List<Product> products = query.getResultList();
+            Product productFromDB = Optional.of(products.get(0)).orElseThrow();
+            entityManager.clear();
+            return productFromDB;
+        }
+
+        private void testUnauthorizedUpdate() throws Exception {
+            Product existingProduct = getProductFromDB(this.sku);
+            String initialProductName = existingProduct.getName();
+            String initialProductDescription = existingProduct.getDescription();
+
+            assertEquals(initialProductName, "Test Product 1");
+            assertEquals(initialProductDescription, "Product for testing 1");
+
+            existingProduct.setName("Updated Name");
+            existingProduct.setDescription("Updated Description");
+
+            mockMvc.perform(MockMvcRequestBuilders.put("/api/products")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(existingProduct)))
+                    .andExpect(status().isForbidden());
+
+
+            Product productAfterUpdateAttempt = getProductFromDB(sku);
+            assertEquals(initialProductName, productAfterUpdateAttempt.getName(), "Name shouldn't be updated");
+            assertEquals(initialProductDescription, productAfterUpdateAttempt.getDescription(), "Description shouldn't be updated");
+
+        }
+
+        @Test
+        @WithAnonymousUser
+        void shouldNotUpdateProductForAnonymousUser() throws Exception {
+            testUnauthorizedUpdate();
+        }
+
+        @Test
+        @WithMockUser(authorities = "user")
+        void shouldNotUpdateProductForUnauthorizedUser() throws Exception {
+            testUnauthorizedUpdate();
+        }
+
+        @Test
+        @WithMockUser(authorities = "admin")
+        void shouldUpdateProductForAuthorizedUser() throws Exception {
+            Product existingProduct = getProductFromDB(this.sku);
+            String initialProductName = existingProduct.getName();
+            String initialProductDescription = existingProduct.getDescription();
+            assertEquals(initialProductName, "Test Product 1");
+            assertEquals(initialProductDescription, "Product for testing 1");
+
+            existingProduct.setName("Updated Name");
+            existingProduct.setDescription("Updated Description");
+
+            mockMvc.perform(MockMvcRequestBuilders.put("/api/products")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(existingProduct)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.name").value("Updated Name"))
+                    .andExpect(jsonPath("$.description").value("Updated Description"));
+
+            Product updatedProduct = getProductFromDB(this.sku);
+            assertEquals(updatedProduct.getName(), "Updated Name");
+            assertEquals(updatedProduct.getDescription(), "Updated Description");
+        }
+    }
+
+
 }
