@@ -26,9 +26,8 @@ import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc
 @Transactional
@@ -46,6 +45,8 @@ public class ProductControllerIT extends BaseIT {
     Product product;
 
     ProductCategory productCategory;
+
+    String uri = "/api/products";
 
     @BeforeEach
     void setUpDataBase() {
@@ -87,7 +88,7 @@ public class ProductControllerIT extends BaseIT {
 
     @Test
     void getAllProductsTest() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/products"))
+        mockMvc.perform(MockMvcRequestBuilders.get(uri))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(2)));
@@ -114,7 +115,7 @@ public class ProductControllerIT extends BaseIT {
         }
 
         private void testAccessForbidden() throws Exception {
-            mockMvc.perform(MockMvcRequestBuilders.post("/api/products")
+            mockMvc.perform(MockMvcRequestBuilders.post(uri)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(product)))
                     .andExpect(status().isForbidden());
@@ -135,7 +136,7 @@ public class ProductControllerIT extends BaseIT {
         @Test
         @WithMockUser(authorities = "admin")
         void shouldCreateProductForAuthorizedUser() throws Exception {
-            mockMvc.perform(MockMvcRequestBuilders.post("/api/products")
+            mockMvc.perform(MockMvcRequestBuilders.post(uri)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(product)))
                     .andExpect(status().isCreated())
@@ -143,21 +144,23 @@ public class ProductControllerIT extends BaseIT {
         }
     }
 
+    Product getProductFromDB(String sku) {
+        Product productFromDB;
+        TypedQuery<Product> query = entityManager.createQuery(
+                "SELECT p FROM Product p WHERE p.sku = :sku", Product.class);
+        query.setParameter("sku", sku);
+        List<Product> products = query.getResultList();
+        if (products.size() > 0) {
+            productFromDB = products.get(0);
+        } else productFromDB = null;
+
+        entityManager.clear();
+        return productFromDB;
+    }
 
     @Nested
     class UpdateProductTest {
-        private String sku = "123456";
-
-
-        private Product getProductFromDB(String sku) {
-            TypedQuery<Product> query = entityManager.createQuery(
-                    "SELECT p FROM Product p WHERE p.sku = :sku", Product.class);
-            query.setParameter("sku", sku);
-            List<Product> products = query.getResultList();
-            Product productFromDB = Optional.of(products.get(0)).orElseThrow();
-            entityManager.clear();
-            return productFromDB;
-        }
+        private final String sku = "123456";
 
         private void testUnauthorizedUpdate() throws Exception {
             Product existingProduct = getProductFromDB(this.sku);
@@ -170,7 +173,7 @@ public class ProductControllerIT extends BaseIT {
             existingProduct.setName("Updated Name");
             existingProduct.setDescription("Updated Description");
 
-            mockMvc.perform(MockMvcRequestBuilders.put("/api/products")
+            mockMvc.perform(MockMvcRequestBuilders.put(uri)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(existingProduct)))
                     .andExpect(status().isForbidden());
@@ -206,7 +209,7 @@ public class ProductControllerIT extends BaseIT {
             existingProduct.setName("Updated Name");
             existingProduct.setDescription("Updated Description");
 
-            mockMvc.perform(MockMvcRequestBuilders.put("/api/products")
+            mockMvc.perform(MockMvcRequestBuilders.put(uri)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(existingProduct)))
                     .andExpect(status().isOk())
@@ -219,5 +222,58 @@ public class ProductControllerIT extends BaseIT {
         }
     }
 
+    @Nested
+    class DeleteProductTest {
+        private final String sku = "888999";
 
+        private void testUnauthorizedDelete() throws Exception{
+            Product existingProduct = getProductFromDB(this.sku);
+            assertNotNull(existingProduct);
+
+            String existingProductName = existingProduct.getName();
+            String existingProductDescription = existingProduct.getDescription();
+            assertEquals(existingProductName, "Test Product 2");
+            assertEquals(existingProductDescription, "Product for testing 2");
+
+            mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + existingProduct.getId()))
+                    .andExpect(status().isForbidden());
+
+            Optional<Product> optionalProduct = Optional.ofNullable(getProductFromDB(this.sku));
+            assertTrue(optionalProduct.isPresent(), "Optional product should not be empty");
+            assertEquals(optionalProduct.get().getName(), "Test Product 2");
+            assertEquals(optionalProduct.get().getDescription(), "Product for testing 2");
+
+        }
+
+        @Test
+        @WithAnonymousUser
+        void shouldNotDeleteProductForAnonymous() throws Exception{
+            testUnauthorizedDelete();
+        }
+
+        @Test
+        @WithMockUser(authorities = "admin")
+        void shouldDeleteProductForAuthorizedUser() throws Exception {
+            Product existingProduct = getProductFromDB(this.sku);
+            assertNotNull(existingProduct);
+
+            String existingProductName = existingProduct.getName();
+            String existingProductDescription = existingProduct.getDescription();
+            assertEquals(existingProductName, "Test Product 2");
+            assertEquals(existingProductDescription, "Product for testing 2");
+
+            mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + existingProduct.getId()))
+                    .andExpect(status().isOk());
+
+            Optional<Product> optionalProduct = Optional.ofNullable(getProductFromDB(this.sku));
+            assertTrue(optionalProduct.isEmpty(), "Optional product should be empty");
+        }
+
+        @Test
+        @WithMockUser(authorities = "name")
+        void shouldNotDeleteProductForUnauthorizedUser() throws Exception{
+           testUnauthorizedDelete();
+        }
+    }
 }
+
