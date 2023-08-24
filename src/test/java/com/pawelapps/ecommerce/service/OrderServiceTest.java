@@ -12,11 +12,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
@@ -35,26 +34,26 @@ public class OrderServiceTest {
 
     @BeforeEach
     void setUp() {
-        Set<OrderProduct> orderProducts = new HashSet<>();
+        List<OrderProduct> orderProducts = new ArrayList<>();
 
         ShippingAddress shippingAddress = ShippingAddress.builder()
-                .country("Polska")
-                .city("Warszawa")
-                .streetAddress("ul. Sezamkowa 24/36")
+                .country("Sample Country")
+                .city("Sample City")
+                .streetAddress("Sample Street 24/36")
                 .zipCode("12-345")
                 .build();
 
         Customer customer = Customer.builder()
-                .firstName("Jan")
-                .lastName("Kowalski")
-                .email("jankowalski@email.com")
+                .firstName("John")
+                .lastName("Smith")
+                .email("jonsmith@email.com")
                 .phoneNumber(123456789)
                 .build();
 
-        OrderProduct orderProduct = OrderProduct.builder().name("Cup")
-                .description("Cup for test")
+        OrderProduct orderProduct = OrderProduct.builder().name("Test Product")
+                .description("Product for test purposes")
                 .unitPrice(BigDecimal.valueOf(2.59))
-                .imageUrl("imagefortesting.com")
+                .imageUrl("assets/images/test-img.jpg")
                 .quantity(4).build();
 
         Summary summary = Summary.builder()
@@ -82,9 +81,9 @@ public class OrderServiceTest {
     }
 
     @Test
-    void saveOrderTest() {
+    void shouldSaveOrder() {
         when(orderRepository.save(any(Order.class))).thenReturn(order);
         orderService.saveOrder(orderDto);
-        verify(orderRepository, description("orderRepository save method should be called.")).save(any(Order.class));
+        verify(orderRepository).save(any(Order.class));
     }
 }

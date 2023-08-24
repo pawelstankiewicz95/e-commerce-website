@@ -1,26 +1,20 @@
 package com.pawelapps.ecommerce.dao;
 
-import com.pawelapps.ecommerce.entity.Product;
+import com.pawelapps.ecommerce.BaseIT;
 import com.pawelapps.ecommerce.entity.ProductCategory;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DataJpaTest
-@TestPropertySource("/test-application.properties")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class ProductCategoryRepositoryIT {
+@Transactional
+public class ProductCategoryRepositoryIT extends BaseIT {
 
     @Autowired
     EntityManager entityManager;
@@ -28,78 +22,61 @@ public class ProductCategoryRepositoryIT {
     @Autowired
     ProductCategoryRepository productCategoryRepository;
 
-    Product product;
     ProductCategory productCategory;
 
     @BeforeEach
-    void setUpDataBase() {
-        product = Product.builder()
-                .sku("123456")
-                .name("TestCup")
-                .description("Just testing cup")
-                .unitPrice(BigDecimal.valueOf(24.35))
-                .imageUrl("www.test.com")
-                .active(true)
-                .unitsInStock(10)
-                .dateCreated(LocalDateTime.now())
-                .lastUpdated(LocalDateTime.now())
-                .productCategory(productCategory)
-                .build();
-        productCategory = ProductCategory.builder().categoryName("Cup").build();
-        productCategory.addProduct(product);
+    void setUp() {
+        productCategory = ProductCategory.builder().categoryName("Test Category 1").build();
         entityManager.persist(productCategory);
         entityManager.flush();
     }
 
     @Test
-    void saveProductCategoryTest() {
+    void shouldSaveCategory() {
         productCategoryRepository.save(productCategory);
 
         assertTrue(productCategory.getId() > 0, "Id should be greater than 0");
     }
 
     @Test
-    void getCategoriesTest() {
+    void shouldGetAllCategories() {
         List<ProductCategory> categories = productCategoryRepository.findAll();
 
         assertFalse(categories.isEmpty(), "List should not be empty");
     }
 
     @Test
-    void getCategoryTest() {
-        ProductCategory productCategoryFromDatabase = productCategoryRepository.findById(1L).orElse(null);
+    void shouldFindCategoryById() {
+        ProductCategory productCategoryFromDatabase = productCategoryRepository.findById(productCategory.getId()).orElse(null);
 
         assertNotNull(productCategoryFromDatabase, "productCategoryFromDatabase should not be null");
-
-        assertEquals(productCategory, productCategoryFromDatabase, "Objects should be the same");
-        assertEquals("Cup", productCategoryFromDatabase.getCategoryName());
+        assertEquals(productCategory.getId(), productCategoryFromDatabase.getId(), "IDs should be the same");
+        assertEquals(productCategory.getCategoryName(), productCategoryFromDatabase.getCategoryName(), "Names should be equal");
     }
 
     @Test
-    void updateProductCategoryTest() {
-        ProductCategory productCategoryFromDatabase = productCategoryRepository.findById(1L).orElse(null);
+    void shouldUpdateCategory() {
+        ProductCategory productCategoryFromDatabase = productCategoryRepository.findById(productCategory.getId()).orElse(null);
 
         assertNotNull(productCategoryFromDatabase, "productCategoryFromDatabase should not be null");
 
-        productCategoryFromDatabase.setCategoryName("updated category : Cup");
-        ProductCategory updatedProductCategory = productCategoryRepository.save(productCategoryFromDatabase);
+        productCategoryFromDatabase.setCategoryName("Updated Category");
+        productCategoryRepository.save(productCategoryFromDatabase);
 
-        assertEquals(productCategoryFromDatabase.getId(), updatedProductCategory.getId(), "Id's should be the same");
-        assertEquals(updatedProductCategory.getCategoryName(), "updated category : Cup", "Category names should be the same");
-
+        assertEquals(productCategoryFromDatabase.getId(), productCategory.getId(), "IDs should be the same");
+        assertEquals(productCategoryRepository.findById(productCategory.getId()).orElse(null).getCategoryName(), "Updated Category", "Category names should match");
     }
 
     @Test
     void deleteProductCategoryTest() {
-        ProductCategory productCategoryFromDatabase = productCategoryRepository.findById(1L).orElse(null);
+        ProductCategory productCategoryFromDatabase = productCategoryRepository.findById(productCategory.getId()).orElse(null);
 
         assertNotNull(productCategoryFromDatabase, "productCategoryFromDatabase should not be null");
 
         productCategoryRepository.delete(productCategoryFromDatabase);
-        Optional<ProductCategory> optionalProductCategory = productCategoryRepository.findById(1L);
+        Optional<ProductCategory> optionalProductCategory = productCategoryRepository.findById(productCategory.getId());
 
         assertTrue(optionalProductCategory.isEmpty(), "optionalProductCategory should be empty");
-
     }
 
 }
