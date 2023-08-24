@@ -37,14 +37,14 @@ public class OrderController {
 
     @PreAuthorize("hasAuthority('admin')")
     @GetMapping("/orders/customer")
-    public ResponseEntity<List<OrderDto>> findOrdersByCustomerEmail(@RequestParam("customerEmail") String customerEmail) throws AccessDeniedException {
+    public ResponseEntity<List<OrderDto>> findOrdersByCustomerEmail(@RequestParam("customerEmail") String customerEmail){
         List<OrderDto> orderDtos = orderService.findByCustomerEmail(customerEmail);
         return new ResponseEntity<>(orderDtos, HttpStatus.OK);
     }
 
     @PreAuthorize("hasAuthority('admin') or #principal?.userName == #userEmail")
     @GetMapping("/orders/user")
-    public ResponseEntity<List<OrderDto>> findOrdersByUserEmail(@RequestParam("userEmail") String userEmail, Principal principal) throws AccessDeniedException {
+    public ResponseEntity<List<OrderDto>> findOrdersByUserEmail(@RequestParam("userEmail") String userEmail, Principal principal){
         List<OrderDto> ordersDto = orderService.findByUserEmail(userEmail);
         return new ResponseEntity<>(ordersDto, HttpStatus.OK);
     }
