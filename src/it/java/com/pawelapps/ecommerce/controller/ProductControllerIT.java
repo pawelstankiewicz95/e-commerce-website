@@ -242,7 +242,6 @@ public class ProductControllerIT extends BaseIT {
             assertTrue(optionalProduct.isPresent(), "Optional product should not be empty");
             assertEquals(optionalProduct.get().getName(), "Test Product 2");
             assertEquals(optionalProduct.get().getDescription(), "Product for testing 2");
-
         }
 
         @Test
