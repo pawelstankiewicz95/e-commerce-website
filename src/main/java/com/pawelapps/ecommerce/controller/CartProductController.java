@@ -34,14 +34,14 @@ public class CartProductController {
 
     @PutMapping("/cart-products/increase/{userEmail}/{productId}")
     @PreAuthorize("#principal?.name == #userEmail")
-    public ResponseEntity<Integer> increaseCartProductQuantityByOne(@PathVariable("userEmail") String userEmail, @PathVariable("productId") Long id, Principal principal) throws AccessDeniedException {
+    public ResponseEntity<Integer> increaseCartProductQuantityByOne(@PathVariable("userEmail") String userEmail, @PathVariable("productId") Long id, Principal principal){
         Integer updatedRows = cartProductService.increaseCartProductQuantityByOne(userEmail, id);
         return new ResponseEntity<>(updatedRows, HttpStatus.OK);
     }
 
     @PutMapping("/cart-products/decrease/{userEmail}/{productId}")
     @PreAuthorize("#principal?.name == #userEmail")
-    public ResponseEntity<Integer> decreaseCartProductQuantityByOne(@PathVariable("userEmail") String userEmail, @PathVariable("productId") Long id, Principal principal) throws AccessDeniedException {
+    public ResponseEntity<Integer> decreaseCartProductQuantityByOne(@PathVariable("userEmail") String userEmail, @PathVariable("productId") Long id, Principal principal){
         Integer updatedRows = cartProductService.decreaseCartProductQuantityByOne(userEmail, id);
         return new ResponseEntity<>(updatedRows, HttpStatus.OK);
     }

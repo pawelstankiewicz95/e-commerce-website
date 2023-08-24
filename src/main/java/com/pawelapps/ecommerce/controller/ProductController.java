@@ -36,21 +36,21 @@ public class ProductController {
 
     @PostMapping(value = "/products", consumes = "application/json;charset=UTF-8")
     @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) throws AccessDeniedException {
+    public ResponseEntity<Product> createProduct(@RequestBody Product product){
         Product newProduct = productService.createProduct(product);
         return new ResponseEntity<>(newProduct, HttpStatus.CREATED);
     }
 
     @PutMapping("/products")
     @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<Product> updateProduct(@RequestBody Product product) throws AccessDeniedException {
+    public ResponseEntity<Product> updateProduct(@RequestBody Product product){
         Product updatedProduct = productService.updateProduct(product);
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
 
     @DeleteMapping("/products/{id}")
     @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<?> deleteProductById(@PathVariable("id") Long id) throws AccessDeniedException {
+    public ResponseEntity<?> deleteProductById(@PathVariable("id") Long id){
         productService.deleteProductById(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
