@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pawelapps.ecommerce.BaseIT;
 import com.pawelapps.ecommerce.entity.Product;
 import com.pawelapps.ecommerce.entity.ProductCategory;
+import com.pawelapps.ecommerce.exception.NotFoundException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -85,13 +86,18 @@ public class ProductControllerIT extends BaseIT {
         entityManager.flush();
     }
 
+    Product getProductFromDB(String sku) {
+        Product productFromDB;
+        TypedQuery<Product> query = entityManager.createQuery(
+                "SELECT p FROM Product p WHERE p.sku = :sku", Product.class);
+        query.setParameter("sku", sku);
+        List<Product> products = query.getResultList();
+        if (products.size() > 0) {
+            productFromDB = products.get(0);
+        } else productFromDB = null;
 
-    @Test
-    void getAllProductsTest() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get(uri))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", hasSize(2)));
+        entityManager.clear();
+        return productFromDB;
     }
 
     @Nested
@@ -110,7 +116,6 @@ public class ProductControllerIT extends BaseIT {
                     .unitsInStock(10)
                     .dateCreated(LocalDateTime.now())
                     .lastUpdated(LocalDateTime.now())
-                    .productCategory(productCategory)
                     .build();
         }
 
@@ -144,19 +149,6 @@ public class ProductControllerIT extends BaseIT {
         }
     }
 
-    Product getProductFromDB(String sku) {
-        Product productFromDB;
-        TypedQuery<Product> query = entityManager.createQuery(
-                "SELECT p FROM Product p WHERE p.sku = :sku", Product.class);
-        query.setParameter("sku", sku);
-        List<Product> products = query.getResultList();
-        if (products.size() > 0) {
-            productFromDB = products.get(0);
-        } else productFromDB = null;
-
-        entityManager.clear();
-        return productFromDB;
-    }
 
     @Nested
     class UpdateProductTest {
@@ -226,7 +218,7 @@ public class ProductControllerIT extends BaseIT {
     class DeleteProductTest {
         private final String sku = "888999";
 
-        private void testUnauthorizedDelete() throws Exception{
+        private void testUnauthorizedDelete() throws Exception {
             Product existingProduct = getProductFromDB(this.sku);
             assertNotNull(existingProduct);
 
@@ -246,7 +238,7 @@ public class ProductControllerIT extends BaseIT {
 
         @Test
         @WithAnonymousUser
-        void shouldNotDeleteProductForAnonymous() throws Exception{
+        void shouldNotDeleteProductForAnonymous() throws Exception {
             testUnauthorizedDelete();
         }
 
@@ -270,8 +262,38 @@ public class ProductControllerIT extends BaseIT {
 
         @Test
         @WithMockUser(authorities = "name")
-        void shouldNotDeleteProductForUnauthorizedUser() throws Exception{
-           testUnauthorizedDelete();
+        void shouldNotDeleteProductForUnauthorizedUser() throws Exception {
+            testUnauthorizedDelete();
+        }
+    }
+
+    @Nested
+    class GetProductTest {
+        @Test
+        void shouldGetAllProducts() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.get(uri))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$", hasSize(2)));
+        }
+
+        @Test
+        void shouldGetProductById() throws Exception {
+            Product product = getProductFromDB("123456");
+            Long productId = product.getId();
+
+            mockMvc.perform(MockMvcRequestBuilders.get(uri + "/" + productId))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.sku").value(product.getSku()));
+        }
+
+        @Test
+        void shouldThrowNotFoundExceptionWhenIdDoesNotExist() throws Exception {
+            Long notExistingProductID = 99999999999L;
+            mockMvc.perform(MockMvcRequestBuilders.get(uri + "/" + notExistingProductID))
+                    .andExpect(status().isNotFound())
+                    .andExpect(result -> assertTrue(result.getResolvedException() instanceof NotFoundException));
         }
     }
 }
