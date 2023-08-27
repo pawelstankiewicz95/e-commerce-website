@@ -295,6 +295,14 @@ public class ProductControllerIT extends BaseIT {
                     .andExpect(status().isNotFound())
                     .andExpect(result -> assertTrue(result.getResolvedException() instanceof NotFoundException));
         }
+
+        @Test
+        void shouldFindProductByCategoryId() throws Exception {
+            final Long categoryId = productCategory.getId();
+            mockMvc.perform(MockMvcRequestBuilders.get(uri + "/products-by-category-id/" + categoryId))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(2)));
+        }
     }
 }
 
