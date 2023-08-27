@@ -289,7 +289,7 @@ public class ProductControllerIT extends BaseIT {
         }
 
         @Test
-        void shouldThrowNotFoundExceptionWhenIdDoesNotExist() throws Exception {
+        void shouldThrowNotFoundExceptionWhenProductIdDoesNotExist() throws Exception {
             Long notExistingProductID = 99999999999L;
             mockMvc.perform(MockMvcRequestBuilders.get(uri + "/" + notExistingProductID))
                     .andExpect(status().isNotFound())
@@ -297,11 +297,59 @@ public class ProductControllerIT extends BaseIT {
         }
 
         @Test
-        void shouldFindProductByCategoryId() throws Exception {
+        void shouldGetProductsByCategoryId() throws Exception {
             final Long categoryId = productCategory.getId();
             mockMvc.perform(MockMvcRequestBuilders.get(uri + "/products-by-category-id/" + categoryId))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$", hasSize(2)));
+        }
+
+        @Test
+        void shouldGetProductsByIncompleteName() throws Exception {
+            final String incompleteProductName = "oduct";
+            mockMvc.perform((MockMvcRequestBuilders.get(uri + "/products-by-name-or-sku/" + incompleteProductName)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(2)));
+        }
+
+        @Test
+        void shouldGetProductsByCompleteName() throws Exception {
+            final String completeProductName = "Test Product 1";
+            mockMvc.perform((MockMvcRequestBuilders.get(uri + "/products-by-name-or-sku/" + completeProductName)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(1)));
+        }
+
+        @Test
+        void shouldNotGetProductsWhenNameDoesNotMatch() throws Exception {
+            final String notMatchingName = "Not a match!";
+            mockMvc.perform((MockMvcRequestBuilders.get(uri + "/products-by-name-or-sku/" + notMatchingName)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(0)));
+        }
+
+        @Test
+        void shouldGetProductsByIncompleteSku() throws Exception {
+            final String incompleteSku = "345";
+            mockMvc.perform((MockMvcRequestBuilders.get(uri + "/products-by-name-or-sku/" + incompleteSku)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(1)));
+        }
+
+        @Test
+        void shouldGetProductsByCompleteSku() throws Exception {
+            final String incompleteSku = "888999";
+            mockMvc.perform((MockMvcRequestBuilders.get(uri + "/products-by-name-or-sku/" + incompleteSku)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(1)));
+        }
+
+        @Test
+        void shouldNotGetProductsWhenSkuDoesNotMatch() throws Exception {
+            final String notMatchingSku = "0000000000000";
+            mockMvc.perform((MockMvcRequestBuilders.get(uri + "/products-by-name-or-sku/" + notMatchingSku)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(0)));
         }
     }
 }
