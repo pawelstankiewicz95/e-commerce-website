@@ -23,14 +23,14 @@ import static org.mockito.Mockito.*;
 public class OrderServiceTest {
 
     @MockBean
-    OrderRepository orderRepository;
+    private OrderRepository orderRepository;
 
     @Autowired
-    OrderService orderService;
+    private OrderService orderService;
 
-    Order order;
+    private Order order;
 
-    OrderDto orderDto;
+    private OrderDto orderDto;
 
     @BeforeEach
     void setUp() {

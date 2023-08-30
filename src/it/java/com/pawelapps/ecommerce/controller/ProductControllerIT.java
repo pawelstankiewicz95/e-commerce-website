@@ -35,19 +35,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ProductControllerIT extends BaseIT {
 
     @Autowired
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
 
     @PersistenceContext
-    EntityManager entityManager;
+    private EntityManager entityManager;
 
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
-    Product product;
+    private Product product;
 
-    ProductCategory productCategory;
+    private ProductCategory productCategory;
 
-    String uri = "/api/products";
+    private final String uri = "/api/products";
 
     @BeforeEach
     void setUpDataBase() {

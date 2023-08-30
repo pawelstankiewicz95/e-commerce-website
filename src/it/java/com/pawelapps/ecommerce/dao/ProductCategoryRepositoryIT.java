@@ -17,12 +17,12 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ProductCategoryRepositoryIT extends BaseIT {
 
     @Autowired
-    EntityManager entityManager;
+    private EntityManager entityManager;
 
     @Autowired
-    ProductCategoryRepository productCategoryRepository;
+    private ProductCategoryRepository productCategoryRepository;
 
-    ProductCategory productCategory;
+    private ProductCategory productCategory;
 
     @BeforeEach
     void setUp() {

@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class OrderRepositoryIT extends BaseIT {
 
     @Autowired
-    OrderRepository orderRepository;
+    private OrderRepository orderRepository;
 
     @Test
     void saveOrderTest() {

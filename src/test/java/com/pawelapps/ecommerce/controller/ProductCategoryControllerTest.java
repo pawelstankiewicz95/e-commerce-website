@@ -34,15 +34,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ProductCategoryControllerTest {
 
     @Autowired
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
 
     @MockBean
-    ProductCategoryService productCategoryService;
+    private ProductCategoryService productCategoryService;
 
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
-    ProductCategory productCategory;
+    private ProductCategory productCategory;
 
 
     @Test

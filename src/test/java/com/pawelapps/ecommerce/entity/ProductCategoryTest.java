@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ProductCategoryTest {
 
-    ProductCategory productCategory;
+    private ProductCategory productCategory;
 
     @BeforeEach
     void init() {

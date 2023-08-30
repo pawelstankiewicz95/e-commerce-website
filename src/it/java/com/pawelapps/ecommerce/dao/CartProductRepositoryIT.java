@@ -22,15 +22,15 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CartProductRepositoryIT extends BaseIT {
 
     @Autowired
-    EntityManager entityManager;
+    private EntityManager entityManager;
 
     @Autowired
-    CartProductRepository cartProductRepository;
+    private CartProductRepository cartProductRepository;
 
-    CartProduct cartProduct1;
-    CartProduct cartProduct2;
-    Cart cart;
-    User user;
+    private CartProduct cartProduct1;
+    private CartProduct cartProduct2;
+    private Cart cart;
+    private User user;
 
     @BeforeEach
     void setUp() {
