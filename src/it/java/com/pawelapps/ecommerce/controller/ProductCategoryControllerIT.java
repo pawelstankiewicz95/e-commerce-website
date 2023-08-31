@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc
@@ -66,7 +68,7 @@ public class ProductCategoryControllerIT extends BaseIT {
     }
 
     @Nested
-    class getProductCategoryTest {
+    class getProductCategoryTests {
 
         @Test
         void shouldReturnAllProductCategories() throws Exception {
@@ -93,5 +95,46 @@ public class ProductCategoryControllerIT extends BaseIT {
                     .andExpect(status().isNotFound())
                     .andExpect(result -> assertTrue(result.getResolvedException() instanceof NotFoundException));
         }
+    }
+
+    @Nested
+    class createProductCategoryTests {
+
+        private final String categoryName = "Category for create tests";
+        private ProductCategory productCategory = ProductCategory.builder().categoryName(categoryName).build();
+
+        private void testForbiddenAccess() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.post(uri)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(productCategory)))
+                    .andExpect(status().isForbidden());
+
+            assertNull(getProductCategoryFromDBByName(categoryName));
+        }
+
+        @Test
+        @WithAnonymousUser
+        void shouldNotCreateProductCategoryForAnonymousUser() throws Exception{
+            testForbiddenAccess();
+        }
+
+        @Test
+        @WithMockUser(authorities = "user")
+        void shouldNotCreateProductCategoryForUnauthorizedUser() throws Exception{
+            testForbiddenAccess();
+        }
+
+        @Test
+        @WithMockUser(authorities = "admin")
+        void shouldCreateProductForAuthorizedUser() throws Exception{
+            mockMvc.perform(MockMvcRequestBuilders.post(uri).contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(productCategory)))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.categoryName").value(categoryName));
+
+            assertNotNull(getProductCategoryFromDBByName(categoryName));
+        }
+
+
     }
 }
