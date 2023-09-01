@@ -1,5 +1,7 @@
 package com.pawelapps.ecommerce.controller;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pawelapps.ecommerce.BaseIT;
 import com.pawelapps.ecommerce.entity.ProductCategory;
 import com.pawelapps.ecommerce.exception.NotFoundException;
@@ -17,7 +19,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
@@ -55,7 +56,7 @@ public class ProductCategoryControllerIT extends BaseIT {
     private ProductCategory getProductCategoryFromDBByName(String name) {
         ProductCategory productCategoryFromDB;
         TypedQuery<ProductCategory> query = entityManager.createQuery(
-                "SELECT c FROM ProductCategory c WHERE c.categoryName = :name", ProductCategory.class);
+                "SELECT pc FROM ProductCategory pc LEFT JOIN FETCH pc.products WHERE pc.categoryName = :name", ProductCategory.class);
         query.setParameter("name", name);
 
         List<ProductCategory> categories = query.getResultList();
@@ -114,27 +115,82 @@ public class ProductCategoryControllerIT extends BaseIT {
 
         @Test
         @WithAnonymousUser
-        void shouldNotCreateProductCategoryForAnonymousUser() throws Exception{
+        void shouldNotCreateProductCategoryForAnonymousUser() throws Exception {
             testForbiddenAccess();
         }
 
         @Test
         @WithMockUser(authorities = "user")
-        void shouldNotCreateProductCategoryForUnauthorizedUser() throws Exception{
+        void shouldNotCreateProductCategoryForUnauthorizedUser() throws Exception {
             testForbiddenAccess();
         }
 
         @Test
         @WithMockUser(authorities = "admin")
-        void shouldCreateProductForAuthorizedUser() throws Exception{
+        void shouldCreateProductForAuthorizedUser() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders.post(uri).contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(productCategory)))
+                            .content(objectMapper.writeValueAsString(productCategory)))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.categoryName").value(categoryName));
 
             assertNotNull(getProductCategoryFromDBByName(categoryName));
         }
+    }
 
+    @Nested
+    class UpdateProductCategoryTests {
 
+        private void testUnauthorizedUpdate() throws Exception {
+            ProductCategory existingProductCategory = getProductCategoryFromDBByName("Test category 1");
+            String initialProductName = existingProductCategory.getCategoryName();
+
+            assertEquals(initialProductName, "Test category 1");
+
+            existingProductCategory.setCategoryName("Updated Name");
+
+            mockMvc.perform(MockMvcRequestBuilders.put(uri)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(existingProductCategory)))
+                    .andExpect(status().isForbidden());
+
+            ProductCategory productAfterUpdateAttempt = getProductCategoryFromDBByName("Test category 1");
+            assertEquals(initialProductName, productAfterUpdateAttempt.getCategoryName(), "Name shouldn't be updated");
+
+        }
+
+        @Test
+        @WithAnonymousUser
+        void shouldNotUpdateProductForAnonymousUser() throws Exception {
+            testUnauthorizedUpdate();
+        }
+
+        @Test
+        @WithMockUser(authorities = "user")
+        void shouldNotUpdateProductForUnauthorizedUser() throws Exception {
+            testUnauthorizedUpdate();
+        }
+
+        @Test
+        @WithMockUser(authorities = "admin")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        void shouldUpdateProductForAuthorizedUser() throws Exception {
+            ProductCategory initialProductCategory = getProductCategoryFromDBByName("Test category 1");
+            Long existingProductCategoryId = initialProductCategory.getId();
+
+            initialProductCategory.setCategoryName("Updated Name");
+
+            mockMvc.perform(MockMvcRequestBuilders.put(uri)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(initialProductCategory)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.categoryName").value("Updated Name"));
+
+            ProductCategory categoryByOldName = getProductCategoryFromDBByName("Test category 1");
+            ProductCategory categoryAfterUpdate = getProductCategoryFromDBByName("Updated Name");
+
+            assertNull(categoryByOldName, "Category with name \"Test category 1\" should not exists");
+            assertNotNull(categoryAfterUpdate, "Category name should be \"Updated Name\"");
+            assertEquals(categoryAfterUpdate.getId(), existingProductCategoryId, "Category Id should not change");
+        }
     }
 }
