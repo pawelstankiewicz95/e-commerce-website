@@ -41,6 +41,9 @@ public class CartProductControllerIT extends BaseIT {
 
     private final String uri = "/api/cart-products";
 
+    private final String authorizedUser = "authorized@example.com";
+    private final String unauthorizedUser = "unauthorized@example.com";
+
     private CartProduct getCartProductFromDB(String name) {
         CartProduct cartProductFromDB;
         TypedQuery<CartProduct> query = entityManager.createQuery(
@@ -67,12 +70,11 @@ public class CartProductControllerIT extends BaseIT {
 
         @Nested
         class saveCartProductTests {
-            private final String username = "testuser@example.com";
             private CartProductDto cartProductDto1 = CartProductDto.builder().id(1L).name("Test Cart Product 1").quantity(1)
                     .build();
 
             private void testUnauthorizedSave() throws Exception {
-                mockMvc.perform(MockMvcRequestBuilders.post(uri + "/" + username)
+                mockMvc.perform(MockMvcRequestBuilders.post(uri + "/" + authorizedUser)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(cartProductDto1)))
                         .andExpect(status().isForbidden());
@@ -82,7 +84,7 @@ public class CartProductControllerIT extends BaseIT {
             }
 
             @Test
-            @WithMockUser("unauthorizeduser@example.com")
+            @WithMockUser(unauthorizedUser)
             void shouldNotSaveCartProductForUnauthorizedUser() throws Exception {
                 testUnauthorizedSave();
             }
@@ -94,11 +96,11 @@ public class CartProductControllerIT extends BaseIT {
             }
 
             @Test
-            @WithMockUser(username = username)
+            @WithMockUser(username = authorizedUser)
             void shouldSaveCartProduct() throws Exception {
                 CartProductDto cartProductDto1 = CartProductDto.builder().id(1L).name("Test Cart Product 1").quantity(1)
                         .build();
-                mockMvc.perform(MockMvcRequestBuilders.post(uri + "/" + username)
+                mockMvc.perform(MockMvcRequestBuilders.post(uri + "/" + authorizedUser)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(cartProductDto1)))
                         .andExpect(status().isCreated());
@@ -112,7 +114,147 @@ public class CartProductControllerIT extends BaseIT {
                 assertNotNull(savedUser, "User should be saved to database");
 
                 String userEmail = savedUser.getEmail();
-                assertEquals(username, userEmail, "Logged user should be cart owner");
+                assertEquals(authorizedUser, userEmail, "Logged user should be cart owner");
+            }
+        }
+    }
+
+    @Nested
+    class TestsWithSetUp {
+
+        private CartProduct cartProduct1;
+
+        private CartProduct cartProduct2;
+
+        private User user;
+
+        private Cart cart;
+
+        @BeforeEach
+        void setUpDataBase() {
+            cartProduct1 = CartProduct.builder().productId(1L).name("Test Cart Product 1").quantity(1)
+                    .build();
+            cartProduct2 = CartProduct.builder().productId(2L).name("Test Cart Product 2").quantity(1)
+                    .build();
+            user = User.builder().email(authorizedUser).build();
+            cart = Cart.builder().user(user).build();
+            cart.addCartProduct(cartProduct1);
+            cart.addCartProduct(cartProduct2);
+            entityManager.persist(cart);
+            entityManager.flush();
+            entityManager.clear();
+        }
+
+        @Nested
+        class GetCartProductsByUserEmailTests {
+
+            private void testUnauthorizedGetAttempt() {
+
+            }
+
+            @WithAnonymousUser
+            void shouldNotGetCartProductForAnonymousUser() {
+
+            }
+
+            @WithMockUser(unauthorizedUser)
+            void shouldNotGetCartProductForUnauthorizedUser() {
+
+            }
+
+            @WithMockUser(authorizedUser)
+            void shouldGetCartProductsForAuthorizedUser() {
+
+            }
+        }
+
+        @Nested
+        class IncreaseCartProductQuantityByOneTests {
+
+            private void testUnauthorizedIncreaseAttempt() {
+
+            }
+
+            @WithAnonymousUser
+            void shouldNotIncreaseQuantityForAnonymousUser() {
+
+            }
+
+            @WithMockUser(unauthorizedUser)
+            void shouldNotIncreaseQuantityForUnauthorizedUser() {
+
+            }
+
+            @WithMockUser(authorizedUser)
+            void shouldIncreaseQuantityAuthorizedUser() {
+
+            }
+        }
+
+        @Nested
+        class DecreaseCartProductQuantityByOneTests {
+
+            private void testUnauthorizedDecreaseAttempt() {
+
+            }
+
+            @WithAnonymousUser
+            void shouldNotDecreaseQuantityForAnonymousUser() {
+
+            }
+
+            @WithMockUser(unauthorizedUser)
+            void shouldNotDecreaseQuantityForUnauthorizedUser() {
+
+            }
+
+            @WithMockUser(authorizedUser)
+            void shouldDecreaseQuantityAuthorizedUser() {
+
+            }
+        }
+
+        @Nested
+        class DeleteAllCartProductsByUserEmailTests {
+
+            private void testUnauthorizedDeleteAttempt() {
+
+            }
+
+            @WithAnonymousUser
+            void shouldNotDeleteProductsForAnonymousUser() {
+
+            }
+            @WithMockUser(unauthorizedUser)
+            void shouldNotDeleteProductsForUnauthorizedUser() {
+
+            }
+
+            @WithMockUser(authorizedUser)
+            void shouldDeleteProductsForAuthorizedUser() {
+
+            }
+        }
+
+        @Nested
+        class DeleteCartProductByUserEmailAndProductIdTests {
+
+            private void testUnauthorizedDeleteAttempt() {
+
+            }
+
+            @WithAnonymousUser
+            void shouldNotDeleteProductForAnonymousUser() {
+
+            }
+            @WithMockUser(unauthorizedUser)
+            void shouldNotDeleteProductForUnauthorizedUser() {
+
+            }
+
+            @WithMockUser(authorizedUser)
+            void shouldDeleteProductForAuthorizedUser() {
+
             }
         }
     }
