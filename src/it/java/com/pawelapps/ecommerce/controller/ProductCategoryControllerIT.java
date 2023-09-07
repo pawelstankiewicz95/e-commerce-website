@@ -1,6 +1,5 @@
 package com.pawelapps.ecommerce.controller;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pawelapps.ecommerce.BaseIT;
 import com.pawelapps.ecommerce.entity.Product;
@@ -64,13 +63,16 @@ public class ProductCategoryControllerIT extends BaseIT {
         TypedQuery<ProductCategory> query = entityManager.createQuery(
                 "SELECT pc FROM ProductCategory pc LEFT JOIN FETCH pc.products WHERE pc.categoryName = :name", ProductCategory.class);
         query.setParameter("name", name);
-
         List<ProductCategory> categories = query.getResultList();
-        if (categories.size() > 0) {
-            productCategoryFromDB = categories.get(0);
-        } else productCategoryFromDB = null;
-
         entityManager.clear();
+        if (categories.size() == 1) {
+            productCategoryFromDB = categories.get(0);
+        } else if (categories.size() == 0) {
+            productCategoryFromDB = null;
+        } else {
+            fail("Test case should have unique category name");
+            productCategoryFromDB = null;
+        }
         return productCategoryFromDB;
     }
 
@@ -177,10 +179,10 @@ public class ProductCategoryControllerIT extends BaseIT {
 
         @Test
         @WithMockUser(authorities = "admin")
-        @JsonInclude(JsonInclude.Include.NON_NULL)
         void shouldUpdateProductCategoryForAuthorizedUser() throws Exception {
             ProductCategory initialProductCategory = getProductCategoryFromDBByName("Test category 1");
             Long existingProductCategoryId = initialProductCategory.getId();
+            entityManager.clear();
 
             initialProductCategory.setCategoryName("Updated Name");
 
@@ -264,6 +266,5 @@ public class ProductCategoryControllerIT extends BaseIT {
                     .andExpect(status().isNotFound())
                     .andExpect(result -> assertTrue(result.getResolvedException() instanceof NotFoundException));
         }
-
     }
 }
