@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -37,13 +38,6 @@ public class CartProductControllerIT extends BaseIT {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    private CartProduct cartProduct1;
-    private CartProduct cartProduct2;
-
-    private User user;
-
-    private Cart cart;
 
     private final String uri = "/api/cart-products";
 
@@ -70,31 +64,57 @@ public class CartProductControllerIT extends BaseIT {
 
     @Nested
     class TestsWithNoSetUp {
-        final String username = "testuser@example.com";
 
-        @Test
-        @WithMockUser(username = username)
-        void shouldSaveCartProduct() throws Exception {
-            CartProductDto cartProductDto1 = CartProductDto.builder().id(1L).name("Test Cart Product 1").quantity(1)
+        @Nested
+        class saveCartProductTests {
+            private final String username = "testuser@example.com";
+            private CartProductDto cartProductDto1 = CartProductDto.builder().id(1L).name("Test Cart Product 1").quantity(1)
                     .build();
-            mockMvc.perform(MockMvcRequestBuilders.post(uri + "/" + username)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(cartProductDto1)))
-                    .andExpect(status().isCreated());
-            CartProduct cartProductFromDB = getCartProductFromDB("Test Cart Product 1");
-            assertEquals("Test Cart Product 1", cartProductFromDB.getName(), "Saved cart product should exist in database");
 
-            Cart createdCart = cartProductFromDB.getCart();
-            assertNotNull(createdCart, "Cart should be created");
+            private void testUnauthorizedSave() throws Exception {
+                mockMvc.perform(MockMvcRequestBuilders.post(uri + "/" + username)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(cartProductDto1)))
+                        .andExpect(status().isForbidden());
 
-            User savedUser =  cartProductFromDB.getCart().getUser();
-            assertNotNull(savedUser, "User should be saved to database");
+                CartProduct cartProductFromDB = getCartProductFromDB("Test Cart Product 1");
+                assertNull(cartProductFromDB, "Cart product should not be created");
+            }
 
-            String userEmail = savedUser.getEmail();
-            assertEquals(username, userEmail, "Logged user should be cart owner");
+            @Test
+            @WithMockUser("unauthorizeduser@example.com")
+            void shouldNotSaveCartProductForUnauthorizedUser() throws Exception {
+                testUnauthorizedSave();
+            }
+
+            @Test
+            @WithAnonymousUser
+            void shouldNotSaveCartProductForAnonymousUser() throws Exception {
+                testUnauthorizedSave();
+            }
+
+            @Test
+            @WithMockUser(username = username)
+            void shouldSaveCartProduct() throws Exception {
+                CartProductDto cartProductDto1 = CartProductDto.builder().id(1L).name("Test Cart Product 1").quantity(1)
+                        .build();
+                mockMvc.perform(MockMvcRequestBuilders.post(uri + "/" + username)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(cartProductDto1)))
+                        .andExpect(status().isCreated());
+                CartProduct cartProductFromDB = getCartProductFromDB("Test Cart Product 1");
+                assertEquals("Test Cart Product 1", cartProductFromDB.getName(), "Saved cart product should exist in database");
+
+                Cart createdCart = cartProductFromDB.getCart();
+                assertNotNull(createdCart, "Cart should be created");
+
+                User savedUser = cartProductFromDB.getCart().getUser();
+                assertNotNull(savedUser, "User should be saved to database");
+
+                String userEmail = savedUser.getEmail();
+                assertEquals(username, userEmail, "Logged user should be cart owner");
+            }
         }
-
     }
-
 }
 
