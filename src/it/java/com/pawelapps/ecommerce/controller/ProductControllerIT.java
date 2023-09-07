@@ -86,7 +86,7 @@ public class ProductControllerIT extends BaseIT {
         entityManager.flush();
     }
 
-    Product getProductFromDB(String sku) {
+    private Product getProductFromDB(String sku) {
         Product productFromDB;
         TypedQuery<Product> query = entityManager.createQuery(
                 "SELECT p FROM Product p WHERE p.sku = :sku", Product.class);
