@@ -24,8 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -152,7 +151,6 @@ public class CartProductControllerIT extends BaseIT {
         @Nested
         class GetCartProductsByUserEmailTests {
 
-
             private void testUnauthorizedGetAttempt() throws Exception {
                 mockMvc.perform(MockMvcRequestBuilders.get(uri + "/" + authorizedUser)
                                 .contentType(MediaType.APPLICATION_JSON))
@@ -185,23 +183,50 @@ public class CartProductControllerIT extends BaseIT {
         @Nested
         class IncreaseCartProductQuantityByOneTests {
 
-            private void testUnauthorizedIncreaseAttempt() {
+            private void testUnauthorizedIncreaseAttempt() throws Exception {
+                CartProduct initialCartProduct = getCartProductFromDB("Test Cart Product 1");
+                int initialCartProductQuantity = initialCartProduct.getQuantity();
+                Long cartProductId = initialCartProduct.getCartProductId();
 
+                mockMvc.perform(MockMvcRequestBuilders.put(uri + "/increase/" + authorizedUser + "/" + cartProductId)
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isForbidden());
+
+                CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB("Test Cart Product 1");
+                int cartProductQuantityAfterUpdateAttempt = cartProductAfterUpdateAttempt.getQuantity();
+
+                assertEquals(initialCartProductQuantity, cartProductQuantityAfterUpdateAttempt);
             }
 
+            @Test
             @WithAnonymousUser
-            void shouldNotIncreaseQuantityForAnonymousUser() {
-
+            void shouldNotIncreaseQuantityForAnonymousUser() throws Exception {
+                testUnauthorizedIncreaseAttempt();
             }
 
+            @Test
             @WithMockUser(unauthorizedUser)
-            void shouldNotIncreaseQuantityForUnauthorizedUser() {
-
+            void shouldNotIncreaseQuantityForUnauthorizedUser() throws Exception {
+                testUnauthorizedIncreaseAttempt();
             }
 
+            @Test
             @WithMockUser(authorizedUser)
-            void shouldIncreaseQuantityAuthorizedUser() {
+            void shouldIncreaseQuantityAuthorizedUser() throws Exception {
+                CartProduct initialCartProduct = getCartProductFromDB("Test Cart Product 1");
+                int initialCartProductQuantity = initialCartProduct.getQuantity();
+                Long cartProductId = initialCartProduct.getCartProductId();
 
+                mockMvc.perform(MockMvcRequestBuilders.put(uri + "/increase/" + authorizedUser + "/" + cartProductId)
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$").value("1"));
+
+
+                CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB("Test Cart Product 1");
+                int cartProductQuantityAfterUpdateAttempt = cartProductAfterUpdateAttempt.getQuantity();
+
+                assertEquals(initialCartProductQuantity + 1, cartProductQuantityAfterUpdateAttempt);
             }
         }
 
