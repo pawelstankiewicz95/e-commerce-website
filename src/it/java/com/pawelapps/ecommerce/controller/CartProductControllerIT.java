@@ -9,6 +9,7 @@ import com.pawelapps.ecommerce.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import jdk.jfr.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -23,7 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
@@ -148,23 +152,33 @@ public class CartProductControllerIT extends BaseIT {
         @Nested
         class GetCartProductsByUserEmailTests {
 
-            private void testUnauthorizedGetAttempt() {
+
+            private void testUnauthorizedGetAttempt() throws Exception {
+                mockMvc.perform(MockMvcRequestBuilders.get(uri + "/" + authorizedUser)
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isForbidden());
 
             }
 
+            @Test
             @WithAnonymousUser
-            void shouldNotGetCartProductForAnonymousUser() {
-
+            void shouldNotGetCartProductForAnonymousUser() throws Exception {
+                testUnauthorizedGetAttempt();
             }
 
+            @Test
             @WithMockUser(unauthorizedUser)
-            void shouldNotGetCartProductForUnauthorizedUser() {
-
+            void shouldNotGetCartProductForUnauthorizedUser() throws Exception {
+                testUnauthorizedGetAttempt();
             }
 
+            @Test
             @WithMockUser(authorizedUser)
-            void shouldGetCartProductsForAuthorizedUser() {
-
+            void shouldGetCartProductsForAuthorizedUser() throws Exception {
+                mockMvc.perform(MockMvcRequestBuilders.get(uri + "/" + authorizedUser)
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$", hasSize(greaterThan(0))));
             }
         }
 
@@ -225,6 +239,7 @@ public class CartProductControllerIT extends BaseIT {
             void shouldNotDeleteProductsForAnonymousUser() {
 
             }
+
             @WithMockUser(unauthorizedUser)
             void shouldNotDeleteProductsForUnauthorizedUser() {
 
@@ -247,6 +262,7 @@ public class CartProductControllerIT extends BaseIT {
             void shouldNotDeleteProductForAnonymousUser() {
 
             }
+
             @WithMockUser(unauthorizedUser)
             void shouldNotDeleteProductForUnauthorizedUser() {
 
