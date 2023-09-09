@@ -9,7 +9,6 @@ import com.pawelapps.ecommerce.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
-import jdk.jfr.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -24,7 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -195,7 +195,7 @@ public class CartProductControllerIT extends BaseIT {
                 CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB("Test Cart Product 1");
                 int cartProductQuantityAfterUpdateAttempt = cartProductAfterUpdateAttempt.getQuantity();
 
-                assertEquals(initialCartProductQuantity, cartProductQuantityAfterUpdateAttempt);
+                assertEquals(initialCartProductQuantity, cartProductQuantityAfterUpdateAttempt, "Should not increase cart product quantity");
             }
 
             @Test
@@ -233,69 +233,139 @@ public class CartProductControllerIT extends BaseIT {
         @Nested
         class DecreaseCartProductQuantityByOneTests {
 
-            private void testUnauthorizedDecreaseAttempt() {
+            private void testUnauthorizedDecreaseAttempt() throws Exception {
+                CartProduct initialCartProduct = getCartProductFromDB("Test Cart Product 1");
+                int initialCartProductQuantity = initialCartProduct.getQuantity();
+                Long cartProductId = initialCartProduct.getCartProductId();
 
+                mockMvc.perform(MockMvcRequestBuilders.put(uri + "/decrease/" + authorizedUser + "/" + cartProductId)
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isForbidden());
+
+                CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB("Test Cart Product 1");
+                int cartProductQuantityAfterUpdateAttempt = cartProductAfterUpdateAttempt.getQuantity();
+
+                assertEquals(initialCartProductQuantity, cartProductQuantityAfterUpdateAttempt);
             }
 
             @WithAnonymousUser
-            void shouldNotDecreaseQuantityForAnonymousUser() {
-
+            void shouldNotDecreaseQuantityForAnonymousUser() throws Exception {
+                testUnauthorizedDecreaseAttempt();
             }
 
             @WithMockUser(unauthorizedUser)
-            void shouldNotDecreaseQuantityForUnauthorizedUser() {
-
+            void shouldNotDecreaseQuantityForUnauthorizedUser() throws Exception {
+                testUnauthorizedDecreaseAttempt();
             }
 
             @WithMockUser(authorizedUser)
-            void shouldDecreaseQuantityAuthorizedUser() {
+            void shouldDecreaseQuantityAuthorizedUser() throws Exception {
+                CartProduct initialCartProduct = getCartProductFromDB("Test Cart Product 1");
+                int initialCartProductQuantity = initialCartProduct.getQuantity();
+                Long cartProductId = initialCartProduct.getCartProductId();
 
+                mockMvc.perform(MockMvcRequestBuilders.put(uri + "/decrease/" + authorizedUser + "/" + cartProductId)
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isOk());
+
+                CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB("Test Cart Product 1");
+                int cartProductQuantityAfterUpdateAttempt = cartProductAfterUpdateAttempt.getQuantity();
+
+                assertEquals(initialCartProductQuantity - 1, cartProductQuantityAfterUpdateAttempt);
             }
         }
 
         @Nested
         class DeleteAllCartProductsByUserEmailTests {
 
-            private void testUnauthorizedDeleteAttempt() {
-
+            private List<CartProduct> getAllCartProductsByUser(String userEmail) {
+                TypedQuery<CartProduct> getAllCartProductsQuery = entityManager
+                        .createQuery("SELECT cp FROM CartProduct cp JOIN cp.cart c JOIN c.user u WHERE u.email = :email", CartProduct.class);
+                getAllCartProductsQuery.setParameter("email", userEmail);
+                List<CartProduct> cartProducts = getAllCartProductsQuery.getResultList();
+                entityManager.clear();
+                return cartProducts;
             }
 
+            private void testUnauthorizedDeleteAttempt() throws Exception {
+
+                List<CartProduct> cartProducts = getAllCartProductsByUser(authorizedUser);
+                assertEquals(2, cartProducts.size());
+
+                mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + authorizedUser))
+                        .andExpect(status().isForbidden());
+
+                List<CartProduct> cartProductsAfterDeleteAttempt = getAllCartProductsByUser(authorizedUser);
+                assertEquals(2, cartProductsAfterDeleteAttempt.size());
+            }
+
+            @Test
             @WithAnonymousUser
-            void shouldNotDeleteProductsForAnonymousUser() {
-
+            void shouldNotDeleteProductsForAnonymousUser() throws Exception {
+                testUnauthorizedDeleteAttempt();
             }
 
+            @Test
             @WithMockUser(unauthorizedUser)
-            void shouldNotDeleteProductsForUnauthorizedUser() {
-
+            void shouldNotDeleteProductsForUnauthorizedUser() throws Exception {
+                testUnauthorizedDeleteAttempt();
             }
 
+            @Test
             @WithMockUser(authorizedUser)
-            void shouldDeleteProductsForAuthorizedUser() {
+            void shouldDeleteProductsForAuthorizedUser() throws Exception {
+                List<CartProduct> cartProducts = getAllCartProductsByUser(authorizedUser);
+                assertEquals(2, cartProducts.size());
 
+                mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + authorizedUser))
+                        .andExpect(status().isOk());
+
+                List<CartProduct> cartProductsAfterDeleteAttempt = getAllCartProductsByUser(authorizedUser);
+                assertEquals(0, cartProductsAfterDeleteAttempt.size());
             }
         }
 
         @Nested
         class DeleteCartProductByUserEmailAndProductIdTests {
 
-            private void testUnauthorizedDeleteAttempt() {
+            private void testUnauthorizedDeleteAttempt() throws Exception {
+                CartProduct initialCartProduct = getCartProductFromDB("Test Cart Product 1");
+                Long cartProductId = initialCartProduct.getCartProductId();
+                assertNotNull(initialCartProduct);
 
+                mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + authorizedUser + "/" + cartProductId)
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isForbidden());
+
+                CartProduct cartProductAfterDeleteAttempt = getCartProductFromDB("Test Cart Product 1");
+                assertNotNull(cartProductAfterDeleteAttempt);
             }
 
+            @Test
             @WithAnonymousUser
-            void shouldNotDeleteProductForAnonymousUser() {
-
+            void shouldNotDeleteProductForAnonymousUser() throws Exception {
+                testUnauthorizedDeleteAttempt();
             }
 
+            @Test
             @WithMockUser(unauthorizedUser)
-            void shouldNotDeleteProductForUnauthorizedUser() {
-
+            void shouldNotDeleteProductForUnauthorizedUser() throws Exception {
+                testUnauthorizedDeleteAttempt();
             }
 
+            @Test
             @WithMockUser(authorizedUser)
-            void shouldDeleteProductForAuthorizedUser() {
+            void shouldDeleteProductForAuthorizedUser() throws Exception {
+                CartProduct initialCartProduct = getCartProductFromDB("Test Cart Product 1");
+                Long cartProductId = initialCartProduct.getCartProductId();
+                assertNotNull(initialCartProduct);
 
+                mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + authorizedUser + "/" + cartProductId)
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isOk());
+
+                CartProduct cartProductAfterDeleteAttempt = getCartProductFromDB("Test Cart Product 1");
+                assertNull(cartProductAfterDeleteAttempt);
             }
         }
     }
