@@ -10,7 +10,7 @@ import org.testcontainers.containers.MySQLContainer;
 @SpringBootTest
 public abstract class BaseIT {
 
-    public static MySQLContainer mySQLContainer = new MySQLContainer("mysql:8.0.33");
+    private static MySQLContainer mySQLContainer = new MySQLContainer("mysql:8.0.33");
 
     @DynamicPropertySource
     public static void overrideProperties(DynamicPropertyRegistry registry) {

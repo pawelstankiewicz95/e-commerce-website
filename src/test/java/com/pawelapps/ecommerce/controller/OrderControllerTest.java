@@ -31,15 +31,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class OrderControllerTest {
 
     @Autowired
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
 
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     @MockBean
-    OrderService orderService;
+    private OrderService orderService;
 
-    OrderDto orderDto;
+    private OrderDto orderDto;
 
     @BeforeEach
     void setUp() {

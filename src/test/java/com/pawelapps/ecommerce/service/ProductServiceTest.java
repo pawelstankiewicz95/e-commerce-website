@@ -32,9 +32,9 @@ public class ProductServiceTest {
     @Autowired
     private ProductService productService;
 
-    Product product;
-    ProductCategory productCategory;
-    List<Product> products;
+    private Product product;
+    private ProductCategory productCategory;
+    private List<Product> products;
 
 
     @BeforeEach

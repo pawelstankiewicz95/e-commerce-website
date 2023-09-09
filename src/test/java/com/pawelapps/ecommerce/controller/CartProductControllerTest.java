@@ -35,16 +35,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CartProductControllerTest {
 
     @Autowired
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
 
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     @MockBean
-    CartProductService cartProductService;
+    private CartProductService cartProductService;
 
-    final String cartOwnerEmail = "owner@example.com";
-    final String notCartOwnerEmail = "notowner@example.com";
+    private final String cartOwnerEmail = "owner@example.com";
+    private final String notCartOwnerEmail = "notowner@example.com";
 
     @Nested
     class GetCartProductsByUserEmailTest {
