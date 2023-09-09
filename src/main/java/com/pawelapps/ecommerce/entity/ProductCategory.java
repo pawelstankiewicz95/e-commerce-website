@@ -6,9 +6,7 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "product_category")
@@ -29,7 +27,7 @@ public class ProductCategory implements Serializable {
     @Column(name = "category_name")
     private String categoryName;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "productCategory")
+    @OneToMany(cascade = {CascadeType.DETACH, CascadeType.REMOVE, CascadeType.REFRESH, CascadeType.PERSIST}, mappedBy = "productCategory")
     @JsonIgnoreProperties("productCategory")
     private List<Product> products;
 
