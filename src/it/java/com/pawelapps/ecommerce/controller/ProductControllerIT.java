@@ -1,11 +1,13 @@
 package com.pawelapps.ecommerce.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import com.pawelapps.ecommerce.BaseIT;
 import com.pawelapps.ecommerce.entity.Product;
 import com.pawelapps.ecommerce.entity.ProductCategory;
 import com.pawelapps.ecommerce.exception.NotFoundException;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,12 +19,12 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -43,7 +45,9 @@ public class ProductControllerIT extends BaseIT {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private Product product;
+    private Product product1;
+
+    private Product product2;
 
     private ProductCategory productCategory;
 
@@ -56,7 +60,7 @@ public class ProductControllerIT extends BaseIT {
         entityManager.persist(productCategory);
         entityManager.flush();
 
-        product = Product.builder()
+        product1 = Product.builder()
                 .sku("123456")
                 .name("Test Product 1")
                 .description("Product for testing 1")
@@ -68,9 +72,9 @@ public class ProductControllerIT extends BaseIT {
                 .lastUpdated(LocalDateTime.now())
                 .productCategory(productCategory)
                 .build();
-        entityManager.persist(product);
+        entityManager.persist(product1);
 
-        product = Product.builder()
+        product2 = Product.builder()
                 .sku("888999")
                 .name("Test Product 2")
                 .description("Product for testing 2")
@@ -82,30 +86,31 @@ public class ProductControllerIT extends BaseIT {
                 .lastUpdated(LocalDateTime.now())
                 .productCategory(productCategory)
                 .build();
-        entityManager.persist(product);
+        entityManager.persist(product2);
         entityManager.flush();
     }
 
-    private Product getProductFromDB(String sku) {
+    private Product getProductFromDB(Long id) {
         Product productFromDB;
         TypedQuery<Product> query = entityManager.createQuery(
-                "SELECT p FROM Product p WHERE p.sku = :sku", Product.class);
-        query.setParameter("sku", sku);
-        List<Product> products = query.getResultList();
-        if (products.size() > 0) {
-            productFromDB = products.get(0);
-        } else productFromDB = null;
-
+                "SELECT p FROM Product p WHERE p.id = :id", Product.class);
+        query.setParameter("id", id);
+        try {
+            productFromDB = query.getSingleResult();
+        } catch (NoResultException noResultException) {
+            productFromDB = null;
+        }
         entityManager.clear();
         return productFromDB;
     }
 
     @Nested
     class createProductTest {
+        private Product productForSave;
 
         @BeforeEach
-        void setUp() {
-            product = Product.builder()
+        void setUpProductForSave() {
+            productForSave = Product.builder()
                     .sku("333222")
                     .name("Created Test Product")
                     .description("Just Created Test Product")
@@ -122,8 +127,10 @@ public class ProductControllerIT extends BaseIT {
         private void testAccessForbidden() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders.post(uri)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(product)))
+                            .content(objectMapper.writeValueAsString(productForSave)))
                     .andExpect(status().isForbidden());
+
+            assertNull(productForSave.getId());
         }
 
         @Test
@@ -141,21 +148,26 @@ public class ProductControllerIT extends BaseIT {
         @Test
         @WithMockUser(authorities = "admin")
         void shouldCreateProductForAuthorizedUser() throws Exception {
-            mockMvc.perform(MockMvcRequestBuilders.post(uri)
+            MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(uri)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(product)))
+                            .content(objectMapper.writeValueAsString(productForSave)))
                     .andExpect(status().isCreated())
-                    .andExpect(jsonPath(("$.sku"), is("333222")));
+                    .andExpect(jsonPath(("$.sku"), is("333222")))
+                    .andReturn();
+
+            String content = result.getResponse().getContentAsString();
+            Long savedProductId = JsonPath.parse(content).read("$.id", Long.class);
+
+            assertNotNull(getProductFromDB(savedProductId));
         }
     }
 
 
     @Nested
     class UpdateProductTest {
-        private final String sku = "123456";
 
         private void testUnauthorizedUpdate() throws Exception {
-            Product existingProduct = getProductFromDB(this.sku);
+            Product existingProduct = getProductFromDB(product1.getId());
             String initialProductName = existingProduct.getName();
             String initialProductDescription = existingProduct.getDescription();
 
@@ -171,7 +183,7 @@ public class ProductControllerIT extends BaseIT {
                     .andExpect(status().isForbidden());
 
 
-            Product productAfterUpdateAttempt = getProductFromDB(sku);
+            Product productAfterUpdateAttempt = getProductFromDB(product1.getId());
             assertEquals(initialProductName, productAfterUpdateAttempt.getName(), "Name shouldn't be updated");
             assertEquals(initialProductDescription, productAfterUpdateAttempt.getDescription(), "Description shouldn't be updated");
 
@@ -192,7 +204,7 @@ public class ProductControllerIT extends BaseIT {
         @Test
         @WithMockUser(authorities = "admin")
         void shouldUpdateProductForAuthorizedUser() throws Exception {
-            Product existingProduct = getProductFromDB(this.sku);
+            Product existingProduct = getProductFromDB(product1.getId());
             String initialProductName = existingProduct.getName();
             String initialProductDescription = existingProduct.getDescription();
             assertEquals(initialProductName, "Test Product 1");
@@ -208,7 +220,7 @@ public class ProductControllerIT extends BaseIT {
                     .andExpect(jsonPath("$.name").value("Updated Name"))
                     .andExpect(jsonPath("$.description").value("Updated Description"));
 
-            Product updatedProduct = getProductFromDB(this.sku);
+            Product updatedProduct = getProductFromDB(product1.getId());
             assertEquals(updatedProduct.getName(), "Updated Name");
             assertEquals(updatedProduct.getDescription(), "Updated Description");
         }
@@ -216,10 +228,8 @@ public class ProductControllerIT extends BaseIT {
 
     @Nested
     class DeleteProductTest {
-        private final String sku = "888999";
-
         private void testUnauthorizedDelete() throws Exception {
-            Product existingProduct = getProductFromDB(this.sku);
+            Product existingProduct = getProductFromDB(product2.getId());
             assertNotNull(existingProduct);
 
             String existingProductName = existingProduct.getName();
@@ -230,7 +240,7 @@ public class ProductControllerIT extends BaseIT {
             mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + existingProduct.getId()))
                     .andExpect(status().isForbidden());
 
-            Optional<Product> optionalProduct = Optional.ofNullable(getProductFromDB(this.sku));
+            Optional<Product> optionalProduct = Optional.ofNullable(getProductFromDB(product2.getId()));
             assertTrue(optionalProduct.isPresent(), "Optional product should not be empty");
             assertEquals(optionalProduct.get().getName(), "Test Product 2");
             assertEquals(optionalProduct.get().getDescription(), "Product for testing 2");
@@ -245,7 +255,7 @@ public class ProductControllerIT extends BaseIT {
         @Test
         @WithMockUser(authorities = "admin")
         void shouldDeleteProductForAuthorizedUser() throws Exception {
-            Product existingProduct = getProductFromDB(this.sku);
+            Product existingProduct = getProductFromDB(product2.getId());
             assertNotNull(existingProduct);
 
             String existingProductName = existingProduct.getName();
@@ -256,7 +266,7 @@ public class ProductControllerIT extends BaseIT {
             mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + existingProduct.getId()))
                     .andExpect(status().isOk());
 
-            Optional<Product> optionalProduct = Optional.ofNullable(getProductFromDB(this.sku));
+            Optional<Product> optionalProduct = Optional.ofNullable(getProductFromDB(product2.getId()));
             assertTrue(optionalProduct.isEmpty(), "Optional product should be empty");
         }
 
@@ -279,13 +289,12 @@ public class ProductControllerIT extends BaseIT {
 
         @Test
         void shouldGetProductById() throws Exception {
-            Product product = getProductFromDB("123456");
-            Long productId = product.getId();
+            Long productId = product1.getId();
 
             mockMvc.perform(MockMvcRequestBuilders.get(uri + "/" + productId))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$.sku").value(product.getSku()));
+                    .andExpect(jsonPath("$.sku").value(product1.getSku()));
         }
 
         @Test
