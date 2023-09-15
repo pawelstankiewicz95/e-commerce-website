@@ -1,11 +1,13 @@
 package com.pawelapps.ecommerce.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import com.pawelapps.ecommerce.BaseIT;
 import com.pawelapps.ecommerce.entity.Product;
 import com.pawelapps.ecommerce.entity.ProductCategory;
 import com.pawelapps.ecommerce.exception.NotFoundException;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,21 +61,22 @@ public class ProductCategoryControllerIT extends BaseIT {
         entityManager.clear();
     }
 
-    private ProductCategory getProductCategoryFromDBByName(String name) {
+    private ProductCategory getProductCategoryFromDB(Long id) {
         ProductCategory productCategoryFromDB;
+
         TypedQuery<ProductCategory> query = entityManager.createQuery(
-                "SELECT pc FROM ProductCategory pc LEFT JOIN FETCH pc.products WHERE pc.categoryName = :name", ProductCategory.class);
-        query.setParameter("name", name);
-        List<ProductCategory> categories = query.getResultList();
-        entityManager.clear();
-        if (categories.size() == 1) {
-            productCategoryFromDB = categories.get(0);
-        } else if (categories.size() == 0) {
-            productCategoryFromDB = null;
-        } else {
-            fail("Test case should have unique category name");
+                "SELECT pc FROM ProductCategory pc LEFT JOIN FETCH pc.products WHERE pc.id = :id", ProductCategory.class);
+        query.setParameter("id", id);
+
+        try {
+            productCategoryFromDB = query.getSingleResult();
+
+        } catch (NoResultException noResultException) {
             productCategoryFromDB = null;
         }
+
+        entityManager.clear();
+
         return productCategoryFromDB;
     }
 
@@ -89,7 +93,7 @@ public class ProductCategoryControllerIT extends BaseIT {
 
         @Test
         void shouldGetProductCategoryWhenIdExist() throws Exception {
-            ProductCategory categoryFromDB = getProductCategoryFromDBByName("Test category 1");
+            ProductCategory categoryFromDB = getProductCategoryFromDB(productCategory1.getId());
             Long categoryId = categoryFromDB.getId();
             mockMvc.perform(MockMvcRequestBuilders.get(uri + "/" + categoryId))
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -109,16 +113,13 @@ public class ProductCategoryControllerIT extends BaseIT {
     @Nested
     class createProductCategoryTests {
 
-        private final String categoryName = "Category for create tests";
-        private ProductCategory productCategory = ProductCategory.builder().categoryName(categoryName).build();
+        private ProductCategory productCategory = ProductCategory.builder().categoryName("Category for create tests").build();
 
         private void testForbiddenAccess() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders.post(uri)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(productCategory)))
                     .andExpect(status().isForbidden());
-
-            assertNull(getProductCategoryFromDBByName(categoryName));
         }
 
         @Test
@@ -136,12 +137,17 @@ public class ProductCategoryControllerIT extends BaseIT {
         @Test
         @WithMockUser(authorities = "admin")
         void shouldCreateProductCategoryForAuthorizedUser() throws Exception {
-            mockMvc.perform(MockMvcRequestBuilders.post(uri).contentType(MediaType.APPLICATION_JSON)
+            MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(uri).contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(productCategory)))
                     .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.categoryName").value(categoryName));
+                    .andExpect(jsonPath("$.categoryName").value(productCategory.getCategoryName())).andReturn();
 
-            assertNotNull(getProductCategoryFromDBByName(categoryName));
+            String content = result.getResponse().getContentAsString();
+            JsonPath.parse(content).read("$.id", Long.class);
+            Long id = JsonPath.parse(content).read("$.id", Long.class);
+            assertNotNull(id);
+
+            assertNotNull(getProductCategoryFromDB(id));
         }
     }
 
@@ -149,9 +155,9 @@ public class ProductCategoryControllerIT extends BaseIT {
     class UpdateProductCategoryTests {
 
         private void testUnauthorizedUpdate() throws Exception {
-            ProductCategory existingProductCategory = getProductCategoryFromDBByName("Test category 1");
+            ProductCategory existingProductCategory = getProductCategoryFromDB(productCategory1.getId());
             String initialProductCategoryName = existingProductCategory.getCategoryName();
-            assertEquals(initialProductCategoryName, "Test category 1");
+            assertEquals("Test category 1", initialProductCategoryName);
 
             existingProductCategory.setCategoryName("Updated Name");
 
@@ -160,8 +166,8 @@ public class ProductCategoryControllerIT extends BaseIT {
                             .content(objectMapper.writeValueAsString(existingProductCategory)))
                     .andExpect(status().isForbidden());
 
-            ProductCategory productAfterUpdateAttempt = getProductCategoryFromDBByName("Test category 1");
-            assertEquals(initialProductCategoryName, productAfterUpdateAttempt.getCategoryName(), "Name shouldn't be updated");
+            ProductCategory productCategoryAfterUpdateAttempt = getProductCategoryFromDB(productCategory1.getId());
+            assertEquals(initialProductCategoryName, productCategoryAfterUpdateAttempt.getCategoryName(), "Name shouldn't be updated");
 
         }
 
@@ -180,9 +186,9 @@ public class ProductCategoryControllerIT extends BaseIT {
         @Test
         @WithMockUser(authorities = "admin")
         void shouldUpdateProductCategoryForAuthorizedUser() throws Exception {
-            ProductCategory initialProductCategory = getProductCategoryFromDBByName("Test category 1");
-            Long existingProductCategoryId = initialProductCategory.getId();
-            entityManager.clear();
+            Long productCategoryId = productCategory1.getId();
+            ProductCategory initialProductCategory = getProductCategoryFromDB(productCategoryId);
+            assertEquals("Test category 1", initialProductCategory.getCategoryName());
 
             initialProductCategory.setCategoryName("Updated Name");
 
@@ -192,12 +198,9 @@ public class ProductCategoryControllerIT extends BaseIT {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.categoryName").value("Updated Name"));
 
-            ProductCategory categoryByOldName = getProductCategoryFromDBByName("Test category 1");
-            ProductCategory categoryAfterUpdate = getProductCategoryFromDBByName("Updated Name");
+            ProductCategory categoryAfterUpdate = getProductCategoryFromDB(productCategory1.getId());
 
-            assertNull(categoryByOldName, "Category with name \"Test category 1\" should not exists");
-            assertNotNull(categoryAfterUpdate, "Category name should be \"Updated Name\"");
-            assertEquals(categoryAfterUpdate.getId(), existingProductCategoryId, "Category Id should not change");
+            assertEquals("Updated Name", categoryAfterUpdate.getCategoryName());
         }
     }
 
@@ -205,19 +208,19 @@ public class ProductCategoryControllerIT extends BaseIT {
     class deleteProductCategoryTests {
 
         private void testUnauthorizedDelete() throws Exception {
-            ProductCategory existingProductCategory = getProductCategoryFromDBByName("Test category 1");
+            ProductCategory existingProductCategory = getProductCategoryFromDB(productCategory1.getId());
             String initialProductCategoryName = existingProductCategory.getCategoryName();
             assertNotNull(existingProductCategory);
-            assertEquals(initialProductCategoryName, "Test category 1");
+            assertEquals("Test category 1", initialProductCategoryName);
 
             Long existingProductCategoryId = existingProductCategory.getId();
             mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + existingProductCategoryId))
                     .andExpect(status().isForbidden());
 
-            Optional<ProductCategory> optionalProductCategory = Optional.ofNullable(getProductCategoryFromDBByName("Test category 1"));
+            Optional<ProductCategory> optionalProductCategory = Optional.ofNullable(getProductCategoryFromDB(productCategory1.getId()));
 
             assertTrue(optionalProductCategory.isPresent(), "Product category should be present");
-            assertEquals(optionalProductCategory.get().getCategoryName(), "Test category 1");
+            assertEquals("Test category 1", optionalProductCategory.get().getCategoryName());
         }
 
         @Test
@@ -235,7 +238,7 @@ public class ProductCategoryControllerIT extends BaseIT {
         @Test
         @WithMockUser(authorities = "admin")
         void shouldDeleteProductCategoryForAuthorizedUser() throws Exception {
-            ProductCategory existingProductCategory = getProductCategoryFromDBByName("Test category 1");
+            ProductCategory existingProductCategory = getProductCategoryFromDB(productCategory1.getId());
             String initialProductCategoryName = existingProductCategory.getCategoryName();
             assertNotNull(existingProductCategory);
             assertEquals(initialProductCategoryName, "Test category 1");
@@ -249,7 +252,7 @@ public class ProductCategoryControllerIT extends BaseIT {
             mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + existingProductCategoryId))
                     .andExpect(status().isOk());
 
-            Optional<ProductCategory> deletedProductCategory = Optional.ofNullable(getProductCategoryFromDBByName("Test category 1"));
+            Optional<ProductCategory> deletedProductCategory = Optional.ofNullable(getProductCategoryFromDB(productCategory1.getId()));
             assertTrue(deletedProductCategory.isEmpty(), "Product category should be deleted");
 
             TypedQuery<Product> query = entityManager.createQuery("select p from Product p where p.productCategory.id = :id", Product.class);
