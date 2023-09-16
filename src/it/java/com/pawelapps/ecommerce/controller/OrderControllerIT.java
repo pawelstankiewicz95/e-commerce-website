@@ -269,4 +269,48 @@ public class OrderControllerIT extends BaseIT {
             testUnauthorizedSave();
         }
     }
+
+    @Nested
+    class findOrderByUserEmailTests {
+        private String findOrderByUserEmailUri = "/api/orders/user";
+
+        private void testUnauthorizedFind() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.get(findOrderByUserEmailUri)
+                            .param("userEmail", authorizedUserEmail)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @WithMockUser(authorities = "admin")
+        void shouldFindOrdersForAdmin() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.get(findOrderByUserEmailUri)
+                            .param("userEmail", authorizedUserEmail)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(2)));
+        }
+
+        @Test
+        @WithMockUser(authorizedUserEmail)
+        void shouldFindOrdersForAuthorizedUser() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.get(findOrderByUserEmailUri)
+                            .param("userEmail", authorizedUserEmail)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(2)));
+        }
+
+        @Test
+        @WithMockUser(unauthorizedUserEmail)
+        void shouldNotFindOrderForUnauthorizedUser() throws Exception {
+            testUnauthorizedFind();
+        }
+
+        @Test
+        @WithAnonymousUser
+        void shouldNotFindOrderForAnonymousUser() throws Exception {
+            testUnauthorizedFind();
+        }
+    }
 }
