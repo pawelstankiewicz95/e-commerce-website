@@ -5,7 +5,7 @@ import com.pawelapps.ecommerce.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -23,12 +23,14 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    @PreAuthorize("#principal?.name == #orderDto.user.email")
     @PostMapping("/orders")
-    public ResponseEntity<OrderDto> saveOrder(@RequestBody OrderDto orderDto) {
+    public ResponseEntity<OrderDto> saveOrder(@RequestBody OrderDto orderDto, Principal principal) {
         OrderDto savedOrderDto = orderService.saveOrder(orderDto);
         return new ResponseEntity<>(savedOrderDto, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasAuthority('admin')")
     @GetMapping("/orders")
     public ResponseEntity<List<OrderDto>> getAllOrders() {
         List<OrderDto> ordersDto = orderService.getAllOrders();
@@ -38,18 +40,18 @@ public class OrderController {
     @PreAuthorize("hasAuthority('admin')")
     @GetMapping("/orders/customer")
     public ResponseEntity<List<OrderDto>> findOrdersByCustomerEmail(@RequestParam("customerEmail") String customerEmail){
-        List<OrderDto> orderDtos = orderService.findByCustomerEmail(customerEmail);
-        return new ResponseEntity<>(orderDtos, HttpStatus.OK);
+        List<OrderDto> ordersDto = orderService.findByCustomerEmail(customerEmail);
+        return new ResponseEntity<>(ordersDto, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('admin') or #principal?.userName == #userEmail")
+    @PreAuthorize("hasAuthority('admin') or #principal?.name == #userEmail")
     @GetMapping("/orders/user")
     public ResponseEntity<List<OrderDto>> findOrdersByUserEmail(@RequestParam("userEmail") String userEmail, Principal principal){
         List<OrderDto> ordersDto = orderService.findByUserEmail(userEmail);
         return new ResponseEntity<>(ordersDto, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('admin') or #principal?.userName == #userEmail")
+    @PostAuthorize("hasAuthority('admin') or #principal?.name == returnObject.body.user.email")
     @GetMapping("/orders/id")
     public ResponseEntity<OrderDto> findOrderById(@RequestParam("id") Long id, Principal principal) {
         OrderDto orderDto = this.orderService.findById(id);
