@@ -80,6 +80,10 @@ public class OrderControllerIT extends BaseIT {
 
     @BeforeEach
     void setUp() {
+        authorizedUser = User.builder()
+                .email(authorizedUserEmail)
+                .build();
+
         orderProduct1 = OrderProduct.builder()
                 .name("Test Product One")
                 .description("Test Description One")
@@ -94,9 +98,6 @@ public class OrderControllerIT extends BaseIT {
                 .unitPrice(BigDecimal.valueOf(2))
                 .build();
 
-        authorizedUser = User.builder()
-                .email(authorizedUserEmail)
-                .build();
 
         customer1 = Customer.builder()
                 .firstName("First Name One")
@@ -125,6 +126,7 @@ public class OrderControllerIT extends BaseIT {
 
         order1.addOrderProduct(orderProduct1);
         order1.addOrderProduct(orderProduct2);
+
 
         customer2 = Customer.builder()
                 .firstName("First Name Two")
@@ -252,9 +254,11 @@ public class OrderControllerIT extends BaseIT {
                             .content(objectMapper.writeValueAsString(orderDtoForSave)))
                     .andExpect(status().isCreated()).andReturn();
             String content = result.getResponse().getContentAsString();
-            JsonPath.parse(content).read("$.id", Long.class);
+
             Long id = JsonPath.parse(content).read("$.id", Long.class);
+
             assertNotNull(id);
+            assertNotNull(getOrderFromDB(id));
         }
 
         @Test
@@ -274,6 +278,18 @@ public class OrderControllerIT extends BaseIT {
     class findOrderByUserEmailTests {
         private String findOrderByUserEmailUri = "/api/orders/user";
 
+        private void testAuthorizedFind() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.get(findOrderByUserEmailUri)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("userEmail", authorizedUserEmail))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.[0].user.email").value(authorizedUserEmail))
+                    .andExpect(jsonPath("$.[0].customer.firstName").value("First Name One"))
+                    .andExpect(jsonPath("$.[0].shippingAddress.city").value("City One"))
+                    .andExpect(jsonPath("$.[0].summary.totalCartValue").value("5"))
+                    .andExpect(jsonPath("$.[0].orderProducts.[0].name").value("Test Product One"));
+        }
+
         private void testUnauthorizedFind() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders.get(findOrderByUserEmailUri)
                             .param("userEmail", authorizedUserEmail)
@@ -284,21 +300,61 @@ public class OrderControllerIT extends BaseIT {
         @Test
         @WithMockUser(authorities = "admin")
         void shouldFindOrdersForAdmin() throws Exception {
-            mockMvc.perform(MockMvcRequestBuilders.get(findOrderByUserEmailUri)
-                            .param("userEmail", authorizedUserEmail)
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$", hasSize(2)));
+            testAuthorizedFind();
         }
 
         @Test
         @WithMockUser(authorizedUserEmail)
         void shouldFindOrdersForAuthorizedUser() throws Exception {
-            mockMvc.perform(MockMvcRequestBuilders.get(findOrderByUserEmailUri)
-                            .param("userEmail", authorizedUserEmail)
-                            .contentType(MediaType.APPLICATION_JSON))
+            testAuthorizedFind();
+        }
+
+        @Test
+        @WithMockUser(unauthorizedUserEmail)
+        void shouldNotFindOrderForUnauthorizedUser() throws Exception {
+            testUnauthorizedFind();
+        }
+
+        @Test
+        @WithAnonymousUser
+        void shouldNotFindOrderForAnonymousUser() throws Exception {
+            testUnauthorizedFind();
+        }
+    }
+
+    @Nested
+    class findOrderByIdTests {
+        private final String findOrderByIdUri = "/api/orders/id";
+
+        private void testAuthorizedFind() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.get(findOrderByIdUri)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("id", order1.getId().toString()))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$", hasSize(2)));
+                    .andExpect(jsonPath("$.user.email").value(authorizedUserEmail))
+                    .andExpect(jsonPath("$.customer.firstName").value("First Name One"))
+                    .andExpect(jsonPath("$.shippingAddress.city").value("City One"))
+                    .andExpect(jsonPath("$.summary.totalCartValue").value("5"))
+                    .andExpect(jsonPath("$.orderProducts.[0].name").value("Test Product One"));
+        }
+
+        private void testUnauthorizedFind() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.get(findOrderByIdUri)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("id", order1.getId().toString()))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @WithMockUser(authorities = "admin")
+        void shouldFindOrderForAdmin() throws Exception {
+            testAuthorizedFind();
+        }
+
+        @Test
+        @WithMockUser(authorizedUserEmail)
+        void shouldFindOrderForAuthorizedUser() throws Exception {
+            testAuthorizedFind();
         }
 
         @Test
