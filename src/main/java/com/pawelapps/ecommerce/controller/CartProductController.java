@@ -6,7 +6,6 @@ import com.pawelapps.ecommerce.service.CartProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,14 +33,14 @@ public class CartProductController {
 
     @PutMapping("/cart-products/increase/{userEmail}/{productId}")
     @PreAuthorize("#principal?.name == #userEmail")
-    public ResponseEntity<Integer> increaseCartProductQuantityByOne(@PathVariable("userEmail") String userEmail, @PathVariable("productId") Long id, Principal principal){
+    public ResponseEntity<Integer> increaseCartProductQuantityByOne(@PathVariable("userEmail") String userEmail, @PathVariable("productId") Long id, Principal principal) {
         Integer updatedRows = cartProductService.increaseCartProductQuantityByOne(userEmail, id);
         return new ResponseEntity<>(updatedRows, HttpStatus.OK);
     }
 
     @PutMapping("/cart-products/decrease/{userEmail}/{productId}")
     @PreAuthorize("#principal?.name == #userEmail")
-    public ResponseEntity<Integer> decreaseCartProductQuantityByOne(@PathVariable("userEmail") String userEmail, @PathVariable("productId") Long id, Principal principal){
+    public ResponseEntity<Integer> decreaseCartProductQuantityByOne(@PathVariable("userEmail") String userEmail, @PathVariable("productId") Long id, Principal principal) {
         Integer updatedRows = cartProductService.decreaseCartProductQuantityByOne(userEmail, id);
         return new ResponseEntity<>(updatedRows, HttpStatus.OK);
     }
@@ -63,7 +62,7 @@ public class CartProductController {
     @PostMapping("cart-products/{userEmail}")
     @PreAuthorize("#principal?.name == #userEmail")
     public ResponseEntity<CartProductDto> saveCartProduct(@RequestBody CartProductDto cartProductDto, @PathVariable("userEmail") String userEmail, Principal principal) {
-        cartProductService.saveCartProductToCart(cartProductDto, userEmail);
-        return new ResponseEntity<>(cartProductDto, HttpStatus.CREATED);
+        CartProductDto savedCartProductDto = cartProductService.saveCartProductToCart(cartProductDto, userEmail);
+        return new ResponseEntity<>(savedCartProductDto, HttpStatus.CREATED);
     }
 }
