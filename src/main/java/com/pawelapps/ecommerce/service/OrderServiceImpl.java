@@ -2,14 +2,14 @@ package com.pawelapps.ecommerce.service;
 
 import com.pawelapps.ecommerce.dao.OrderRepository;
 import com.pawelapps.ecommerce.dto.OrderDto;
-import com.pawelapps.ecommerce.entity.*;
+import com.pawelapps.ecommerce.entity.Order;
+import com.pawelapps.ecommerce.entity.OrderProduct;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,30 +17,17 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
 
     private OrderRepository orderRepository;
-    private ModelMapper modelMapper;
 
     @Autowired
     OrderServiceImpl(OrderRepository orderRepository, ModelMapper modelMapper) {
         this.orderRepository = orderRepository;
-        this.modelMapper = modelMapper;
-
     }
 
     @Override
     public OrderDto saveOrder(OrderDto orderDto) {
-        Customer customer = orderDto.getCustomer();
-        ShippingAddress shippingAddress = orderDto.getShippingAddress();
-        Summary summary = orderDto.getSummary();
-        User user = orderDto.getUser();
-        List<OrderProduct> orderProducts = orderDto.getOrderProducts();
-        Order order = Order.builder()
-                .customer(customer)
-                .shippingAddress(shippingAddress)
-                .summary(summary)
-                .user(user)
-                .build();
-        orderProducts.forEach(product -> order.addOrderProduct(product));
+        Order order = this.mapOrderDtoToOrder(orderDto);
         orderRepository.save(order);
+        orderDto.setId(order.getId());
         return orderDto;
     }
 
@@ -48,7 +35,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderDto> getAllOrders() {
         List<Order> orders = orderRepository.findAll();
-        List<OrderDto> ordersDto = orders.stream().map(o -> modelMapper.map(o, OrderDto.class)).collect(Collectors.toList());
+        List<OrderDto> ordersDto = orders.stream().map(order -> this.mapOrderToOrderDto(order)).collect(Collectors.toList());
         return ordersDto;
 
     }
@@ -56,22 +43,51 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderDto> findByCustomerEmail(String email) {
         List<Order> orders = orderRepository.findByCustomerEmail(email);
-        List<OrderDto> ordersDto = orders.stream().map(o -> modelMapper.map(o, OrderDto.class)).collect(Collectors.toList());
+        List<OrderDto> ordersDto = orders.stream().map(order -> this.mapOrderToOrderDto(order)).collect(Collectors.toList());
         return ordersDto;
     }
 
     @Override
     public List<OrderDto> findByUserEmail(String userEmail) {
         List<Order> orders = orderRepository.findByUserEmail(userEmail);
-        List<OrderDto> ordersDto = orders.stream().map(o -> modelMapper.map(o, OrderDto.class)).collect(Collectors.toList());
+        List<OrderDto> ordersDto = orders.stream().map(order -> this.mapOrderToOrderDto(order)).collect(Collectors.toList());
         return ordersDto;
     }
 
     @Override
     public OrderDto findById(Long id) {
         Order order = this.orderRepository.findById(id).orElseThrow();
-        OrderDto orderDto = modelMapper.map(order, OrderDto.class);
+        OrderDto orderDto = this.mapOrderToOrderDto(order);
         return orderDto;
     }
+
+    private OrderDto mapOrderToOrderDto(Order order) {
+        OrderDto orderDto = new OrderDto();
+        orderDto.setId(order.getId());
+        orderDto.setCustomer(order.getCustomer());
+        orderDto.setShippingAddress(order.getShippingAddress());
+        orderDto.setSummary(order.getSummary());
+        orderDto.setUser(order.getUser());
+
+        List<OrderProduct> orderProducts = order.getOrderProducts();
+        orderProducts.forEach(orderDto::addOrderProduct);
+
+        return orderDto;
+    }
+
+    private Order mapOrderDtoToOrder(OrderDto orderDto) {
+        Order order = new Order();
+        order.setId(orderDto.getId());
+        order.setCustomer(orderDto.getCustomer());
+        order.setShippingAddress(orderDto.getShippingAddress());
+        order.setSummary(orderDto.getSummary());
+        order.setUser(orderDto.getUser());
+
+        List<OrderProduct> orderProducts = orderDto.getOrderProducts();
+        orderProducts.forEach(order::addOrderProduct);
+
+        return order;
+    }
+
 
 }
