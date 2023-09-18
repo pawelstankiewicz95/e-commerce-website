@@ -23,7 +23,7 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @PreAuthorize("#principal?.name == #orderDto.user.email")
+    @PreAuthorize("permitAll()")
     @PostMapping("/orders")
     public ResponseEntity<OrderDto> saveOrder(@RequestBody OrderDto orderDto, Principal principal) {
         OrderDto savedOrderDto = orderService.saveOrder(orderDto);
