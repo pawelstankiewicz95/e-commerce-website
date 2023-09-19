@@ -23,7 +23,7 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @PreAuthorize("#principal?.name == #orderDto.user.email or (isAnonymous() and #orderDto.user.email == Anonymous")
+    @PreAuthorize("(#principal?.name == #orderDto.user.email) or (isAnonymous() and #orderDto.user.email == 'Anonymous')")
     @PostMapping("/orders")
     public ResponseEntity<OrderDto> saveOrder(@RequestBody OrderDto orderDto, Principal principal) {
         OrderDto savedOrderDto = orderService.saveOrder(orderDto);
@@ -37,7 +37,7 @@ public class OrderController {
         return new ResponseEntity<>(ordersDto, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('admin')")
+    @PreAuthorize("(hasAuthority('admin')) or (#principal?.name == #orderDto.user.email)")
     @GetMapping("/orders/customer")
     public ResponseEntity<List<OrderDto>> findOrdersByCustomerEmail(@RequestParam("customerEmail") String customerEmail){
         List<OrderDto> ordersDto = orderService.findByCustomerEmail(customerEmail);
