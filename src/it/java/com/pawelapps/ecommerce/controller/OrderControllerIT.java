@@ -46,16 +46,17 @@ public class OrderControllerIT extends BaseIT {
 
     private final String authorizedUserEmail = "authorized@example.com";
     private final String unauthorizedUserEmail = "unauthorized@example.com";
+    private final String anonymousUserEmail = "Anonymous";
+
     private final String uri = "/api/orders";
 
+    private User authorizedUser;
     private Order order1;
     private Order order2;
     private Customer customer1;
     private Customer customer2;
     private ShippingAddress shippingAddress1;
     private ShippingAddress shippingAddress2;
-    private User authorizedUser;
-    private User unauthorizedUser;
     private Summary summary1;
     private Summary summary2;
     private OrderProduct orderProduct1;
@@ -186,7 +187,15 @@ public class OrderControllerIT extends BaseIT {
 
     @Nested
     class SaveOrderTests {
-        private OrderDto orderDtoForSave;
+        Customer customerForSave;
+
+        private OrderDto authorizedUserOrderDtoForSave;
+        private ShippingAddress shippingAddressForSave;
+        private Summary summaryForSave;
+        private OrderProduct orderProductForSave1;
+        private OrderProduct orderProductForSave2;
+        private List<OrderProduct> orderProductsForSave;
+
 
         @BeforeEach
         void setUp() {
@@ -194,55 +203,56 @@ public class OrderControllerIT extends BaseIT {
                     .email(authorizedUserEmail)
                     .build();
 
-            Customer customerForSave = Customer.builder()
+            customerForSave = Customer.builder()
                     .firstName("Saved First Name")
                     .lastName("Saved Last Name")
                     .phoneNumber(123456789)
                     .email("email1@example.com")
                     .build();
 
-            ShippingAddress shippingAddressForSave = ShippingAddress.builder()
+            shippingAddressForSave = ShippingAddress.builder()
                     .city("Saved City")
                     .country("Saved Country")
                     .zipCode("12-345")
                     .streetAddress("Saved Street")
                     .build();
 
-            Summary summaryForSave = Summary.builder()
+            summaryForSave = Summary.builder()
                     .totalCartValue(BigDecimal.valueOf(2))
                     .totalQuantityOfProducts(2)
                     .build();
 
-            OrderProduct orderProductForSave1 = OrderProduct.builder()
+            orderProductForSave1 = OrderProduct.builder()
                     .name("Saved Product One")
                     .description("Saved Description One")
                     .quantity(1)
                     .unitPrice(BigDecimal.valueOf(1))
                     .build();
 
-            OrderProduct orderProductForSave2 = OrderProduct.builder()
+            orderProductForSave2 = OrderProduct.builder()
                     .name("Saved Product Two")
                     .description("Saved Description Two")
                     .quantity(1)
                     .unitPrice(BigDecimal.valueOf(1)).build();
 
-            List<OrderProduct> orderProductsForSave = new ArrayList<>();
+            orderProductsForSave = new ArrayList<>();
             orderProductsForSave.add(orderProductForSave1);
             orderProductsForSave.add(orderProductForSave2);
 
-            orderDtoForSave = OrderDto.builder()
+            authorizedUserOrderDtoForSave = OrderDto.builder()
                     .user(authorizedUserForSave)
                     .customer(customerForSave)
                     .shippingAddress(shippingAddressForSave)
                     .summary(summaryForSave)
                     .orderProducts(orderProductsForSave)
                     .build();
+
         }
 
         private void testUnauthorizedSave() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders.post(uri)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(orderDtoForSave)))
+                            .content(objectMapper.writeValueAsString(authorizedUserOrderDtoForSave)))
                     .andExpect(status().isForbidden());
         }
 
@@ -251,7 +261,7 @@ public class OrderControllerIT extends BaseIT {
         void shouldSaveOrderForAuthorizedUser() throws Exception {
             MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(uri)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(orderDtoForSave)))
+                            .content(objectMapper.writeValueAsString(authorizedUserOrderDtoForSave)))
                     .andExpect(status().isCreated()).andReturn();
             String content = result.getResponse().getContentAsString();
 
@@ -269,8 +279,29 @@ public class OrderControllerIT extends BaseIT {
 
         @Test
         @WithAnonymousUser
-        void shouldNotSaveOrderForAnonymousUser() throws Exception {
-            testUnauthorizedSave();
+        void shouldSaveOrderForAnonymousUser() throws Exception {
+            User anonymousUserForSave = User.builder()
+                    .email(anonymousUserEmail)
+                    .build();
+
+            OrderDto anonymousUserOrderDtoForSave = OrderDto.builder()
+                    .user(anonymousUserForSave)
+                    .customer(customerForSave)
+                    .shippingAddress(shippingAddressForSave)
+                    .summary(summaryForSave)
+                    .orderProducts(orderProductsForSave)
+                    .build();
+
+            MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(uri)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(anonymousUserOrderDtoForSave)))
+                    .andExpect(status().isCreated()).andReturn();
+            String content = result.getResponse().getContentAsString();
+
+            Long id = JsonPath.parse(content).read("$.id", Long.class);
+
+            assertNotNull(id);
+            assertNotNull(getOrderFromDB(id));
         }
     }
 
