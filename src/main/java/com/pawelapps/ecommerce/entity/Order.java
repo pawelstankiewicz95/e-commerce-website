@@ -47,7 +47,7 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @JsonIgnoreProperties("order")
-    private List<OrderProduct> orderProducts = new ArrayList<>();
+    private List<OrderProduct> orderProducts;
 
     public void addOrderProduct(OrderProduct orderProduct) {
         if (orderProduct != null){

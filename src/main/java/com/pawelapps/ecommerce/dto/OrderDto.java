@@ -3,6 +3,7 @@ package com.pawelapps.ecommerce.dto;
 import com.pawelapps.ecommerce.entity.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -17,4 +18,13 @@ public class OrderDto {
     private Summary summary;
     private User user;
     private List<OrderProduct> orderProducts;
+
+    public void addOrderProduct(OrderProduct orderProduct) {
+        if (orderProduct != null){
+            if (orderProducts == null){
+                orderProducts = new ArrayList<>();
+            }
+            orderProducts.add(orderProduct);
+        }
+    }
 }

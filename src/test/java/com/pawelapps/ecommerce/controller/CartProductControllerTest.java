@@ -108,7 +108,7 @@ public class CartProductControllerTest {
         }
 
         private void testForbiddenAccessWhenSavingCartProduct() throws Exception {
-            when(cartProductService.saveCartProductToCart(any(CartProductDto.class), eq(cartOwnerEmail))).thenReturn(cartProduct);
+            when(cartProductService.saveCartProductToCart(any(CartProductDto.class), eq(cartOwnerEmail))).thenReturn(cartProductDto);
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/cart-products/" + cartOwnerEmail)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -120,7 +120,7 @@ public class CartProductControllerTest {
         @Test
         @WithMockUser(username = cartOwnerEmail)
         void shouldSaveCartProductForCartOwner() throws Exception {
-            when(cartProductService.saveCartProductToCart(any(CartProductDto.class), eq(cartOwnerEmail))).thenReturn(cartProduct);
+            when(cartProductService.saveCartProductToCart(any(CartProductDto.class), eq(cartOwnerEmail))).thenReturn(cartProductDto);
 
             mockMvc.perform(MockMvcRequestBuilders.post("/api/cart-products/" + cartOwnerEmail)
                             .contentType(MediaType.APPLICATION_JSON)

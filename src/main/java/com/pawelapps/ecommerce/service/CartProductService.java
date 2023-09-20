@@ -27,6 +27,6 @@ public interface CartProductService {
 
     void deleteAllCartProductsByUserEmail(String email);
 
-    CartProduct saveCartProductToCart(CartProductDto cartProductDto, String userEmail);
+    CartProductDto saveCartProductToCart(CartProductDto cartProductDto, String userEmail);
 
 }

@@ -87,7 +87,7 @@ public class CartProductServiceImpl implements CartProductService {
         cartProductRepository.deleteAllCartProductsByUserEmail(email);
     }
 
-    public CartProduct saveCartProductToCart(CartProductDto cartProductDto, String userEmail) {
+    public CartProductDto saveCartProductToCart(CartProductDto cartProductDto, String userEmail) {
 
         Cart cart = cartRepository.findByUserEmail(userEmail);
         if (cart == null) {
@@ -98,7 +98,7 @@ public class CartProductServiceImpl implements CartProductService {
             entityManager.flush();
         }
         CartProduct cartProduct = CartProduct.builder()
-                .productId(cartProductDto.getId())
+                .productId(cartProductDto.getProductId())
                 .quantity(cartProductDto.getQuantity())
                 .name(cartProductDto.getName())
                 .description(cartProductDto.getDescription())
@@ -106,6 +106,10 @@ public class CartProductServiceImpl implements CartProductService {
                 .imageUrl(cartProductDto.getImageUrl())
                 .cart(cart)
                 .build();
-        return cartProductRepository.save(cartProduct);
+
+        CartProduct savedCartProduct = cartProductRepository.save(cartProduct);
+        cartProductDto.setCartProductId(savedCartProduct.getCartProductId());
+
+        return cartProductDto;
     }
 }

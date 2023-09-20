@@ -1,12 +1,14 @@
 package com.pawelapps.ecommerce.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import com.pawelapps.ecommerce.BaseIT;
 import com.pawelapps.ecommerce.dto.CartProductDto;
 import com.pawelapps.ecommerce.entity.Cart;
 import com.pawelapps.ecommerce.entity.CartProduct;
 import com.pawelapps.ecommerce.entity.User;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,21 +50,17 @@ public class CartProductControllerIT extends BaseIT {
     private final String authorizedUser = "authorized@example.com";
     private final String unauthorizedUser = "unauthorized@example.com";
 
-    private CartProduct getCartProductFromDB(String name) {
+    private CartProduct getCartProductFromDB(Long id) {
         CartProduct cartProductFromDB;
         TypedQuery<CartProduct> query = entityManager.createQuery(
-                "SELECT cp FROM CartProduct cp WHERE cp.name = :name", CartProduct.class);
-        query.setParameter("name", name);
-        List<CartProduct> cartProducts = query.getResultList();
-
-        if (cartProducts.size() == 1) {
-            cartProductFromDB = cartProducts.get(0);
-        } else if (cartProducts.size() > 1) {
-            fail("Should be tested with unique cart product name");
-            cartProductFromDB = null;
-        } else {
+                "SELECT cp FROM CartProduct cp WHERE cp.id = :id", CartProduct.class);
+        query.setParameter("id", id);
+        try {
+            cartProductFromDB = query.getSingleResult();
+        } catch (NoResultException noResultException) {
             cartProductFromDB = null;
         }
+
 
         entityManager.clear();
 
@@ -73,7 +72,7 @@ public class CartProductControllerIT extends BaseIT {
 
         @Nested
         class saveCartProductTests {
-            private CartProductDto cartProductDto1 = CartProductDto.builder().id(1L).name("Test Cart Product 1").quantity(1)
+            private CartProductDto cartProductDto1 = CartProductDto.builder().productId(1L).name("Test Cart Product 1").quantity(1)
                     .build();
 
             private void testUnauthorizedSave() throws Exception {
@@ -82,8 +81,7 @@ public class CartProductControllerIT extends BaseIT {
                                 .content(objectMapper.writeValueAsString(cartProductDto1)))
                         .andExpect(status().isForbidden());
 
-                CartProduct cartProductFromDB = getCartProductFromDB("Test Cart Product 1");
-                assertNull(cartProductFromDB, "Cart product should not be created");
+                assertNull(cartProductDto1.getCartProductId());
             }
 
             @Test
@@ -101,13 +99,17 @@ public class CartProductControllerIT extends BaseIT {
             @Test
             @WithMockUser(username = authorizedUser)
             void shouldSaveCartProduct() throws Exception {
-                CartProductDto cartProductDto1 = CartProductDto.builder().id(1L).name("Test Cart Product 1").quantity(1)
+                CartProductDto cartProductDto1 = CartProductDto.builder().productId(1L).name("Test Cart Product 1").quantity(1)
                         .build();
-                mockMvc.perform(MockMvcRequestBuilders.post(uri + "/" + authorizedUser)
+                MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(uri + "/" + authorizedUser)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(cartProductDto1)))
-                        .andExpect(status().isCreated());
-                CartProduct cartProductFromDB = getCartProductFromDB("Test Cart Product 1");
+                        .andExpect(status().isCreated()).andReturn();
+
+                String content = result.getResponse().getContentAsString();
+                Long id = JsonPath.parse(content).read("$.cartProductId", Long.class);
+
+                CartProduct cartProductFromDB = getCartProductFromDB(id);
                 assertEquals("Test Cart Product 1", cartProductFromDB.getName(), "Saved cart product should exist in database");
 
                 Cart createdCart = cartProductFromDB.getCart();
@@ -184,15 +186,15 @@ public class CartProductControllerIT extends BaseIT {
         class IncreaseCartProductQuantityByOneTests {
 
             private void testUnauthorizedIncreaseAttempt() throws Exception {
-                CartProduct initialCartProduct = getCartProductFromDB("Test Cart Product 1");
+                Long cartProduct1Id = cartProduct1.getCartProductId();
+                CartProduct initialCartProduct = getCartProductFromDB(cartProduct1Id);
                 int initialCartProductQuantity = initialCartProduct.getQuantity();
-                Long cartProductId = initialCartProduct.getCartProductId();
 
-                mockMvc.perform(MockMvcRequestBuilders.put(uri + "/increase/" + authorizedUser + "/" + cartProductId)
+                mockMvc.perform(MockMvcRequestBuilders.put(uri + "/increase/" + authorizedUser + "/" + cartProduct1Id)
                                 .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isForbidden());
 
-                CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB("Test Cart Product 1");
+                CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB(cartProduct1Id);
                 int cartProductQuantityAfterUpdateAttempt = cartProductAfterUpdateAttempt.getQuantity();
 
                 assertEquals(initialCartProductQuantity, cartProductQuantityAfterUpdateAttempt, "Should not increase cart product quantity");
@@ -213,17 +215,17 @@ public class CartProductControllerIT extends BaseIT {
             @Test
             @WithMockUser(authorizedUser)
             void shouldIncreaseQuantityAuthorizedUser() throws Exception {
-                CartProduct initialCartProduct = getCartProductFromDB("Test Cart Product 1");
+                Long cartProduct1Id = cartProduct1.getCartProductId();
+                CartProduct initialCartProduct = getCartProductFromDB(cartProduct1Id);
                 int initialCartProductQuantity = initialCartProduct.getQuantity();
-                Long cartProductId = initialCartProduct.getCartProductId();
 
-                mockMvc.perform(MockMvcRequestBuilders.put(uri + "/increase/" + authorizedUser + "/" + cartProductId)
+                mockMvc.perform(MockMvcRequestBuilders.put(uri + "/increase/" + authorizedUser + "/" + cartProduct1Id)
                                 .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$").value("1"));
 
 
-                CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB("Test Cart Product 1");
+                CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB(cartProduct1Id);
                 int cartProductQuantityAfterUpdateAttempt = cartProductAfterUpdateAttempt.getQuantity();
 
                 assertEquals(initialCartProductQuantity + 1, cartProductQuantityAfterUpdateAttempt);
@@ -234,41 +236,44 @@ public class CartProductControllerIT extends BaseIT {
         class DecreaseCartProductQuantityByOneTests {
 
             private void testUnauthorizedDecreaseAttempt() throws Exception {
-                CartProduct initialCartProduct = getCartProductFromDB("Test Cart Product 1");
+                Long cartProduct1Id = cartProduct1.getCartProductId();
+                CartProduct initialCartProduct = getCartProductFromDB(cartProduct1Id);
                 int initialCartProductQuantity = initialCartProduct.getQuantity();
-                Long cartProductId = initialCartProduct.getCartProductId();
 
-                mockMvc.perform(MockMvcRequestBuilders.put(uri + "/decrease/" + authorizedUser + "/" + cartProductId)
+                mockMvc.perform(MockMvcRequestBuilders.put(uri + "/decrease/" + authorizedUser + "/" + cartProduct1Id)
                                 .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isForbidden());
 
-                CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB("Test Cart Product 1");
+                CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB(cartProduct1Id);
                 int cartProductQuantityAfterUpdateAttempt = cartProductAfterUpdateAttempt.getQuantity();
 
                 assertEquals(initialCartProductQuantity, cartProductQuantityAfterUpdateAttempt);
             }
 
+            @Test
             @WithAnonymousUser
             void shouldNotDecreaseQuantityForAnonymousUser() throws Exception {
                 testUnauthorizedDecreaseAttempt();
             }
 
+            @Test
             @WithMockUser(unauthorizedUser)
             void shouldNotDecreaseQuantityForUnauthorizedUser() throws Exception {
                 testUnauthorizedDecreaseAttempt();
             }
 
+            @Test
             @WithMockUser(authorizedUser)
             void shouldDecreaseQuantityAuthorizedUser() throws Exception {
-                CartProduct initialCartProduct = getCartProductFromDB("Test Cart Product 1");
+                Long cartProduct1Id = cartProduct1.getCartProductId();
+                CartProduct initialCartProduct = getCartProductFromDB(cartProduct1Id);
                 int initialCartProductQuantity = initialCartProduct.getQuantity();
-                Long cartProductId = initialCartProduct.getCartProductId();
 
-                mockMvc.perform(MockMvcRequestBuilders.put(uri + "/decrease/" + authorizedUser + "/" + cartProductId)
+                mockMvc.perform(MockMvcRequestBuilders.put(uri + "/decrease/" + authorizedUser + "/" + cartProduct1Id)
                                 .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isOk());
 
-                CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB("Test Cart Product 1");
+                CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB(cartProduct1Id);
                 int cartProductQuantityAfterUpdateAttempt = cartProductAfterUpdateAttempt.getQuantity();
 
                 assertEquals(initialCartProductQuantity - 1, cartProductQuantityAfterUpdateAttempt);
@@ -329,15 +334,15 @@ public class CartProductControllerIT extends BaseIT {
         class DeleteCartProductByUserEmailAndProductIdTests {
 
             private void testUnauthorizedDeleteAttempt() throws Exception {
-                CartProduct initialCartProduct = getCartProductFromDB("Test Cart Product 1");
-                Long cartProductId = initialCartProduct.getCartProductId();
+                Long cartProduct1Id = cartProduct1.getCartProductId();
+                CartProduct initialCartProduct = getCartProductFromDB(cartProduct1Id);
                 assertNotNull(initialCartProduct);
 
-                mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + authorizedUser + "/" + cartProductId)
+                mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + authorizedUser + "/" + cartProduct1Id)
                                 .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isForbidden());
 
-                CartProduct cartProductAfterDeleteAttempt = getCartProductFromDB("Test Cart Product 1");
+                CartProduct cartProductAfterDeleteAttempt = getCartProductFromDB(cartProduct1Id);
                 assertNotNull(cartProductAfterDeleteAttempt);
             }
 
@@ -356,15 +361,15 @@ public class CartProductControllerIT extends BaseIT {
             @Test
             @WithMockUser(authorizedUser)
             void shouldDeleteProductForAuthorizedUser() throws Exception {
-                CartProduct initialCartProduct = getCartProductFromDB("Test Cart Product 1");
-                Long cartProductId = initialCartProduct.getCartProductId();
+                Long cartProduct1Id = cartProduct1.getCartProductId();
+                CartProduct initialCartProduct = getCartProductFromDB(cartProduct1Id);
                 assertNotNull(initialCartProduct);
 
-                mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + authorizedUser + "/" + cartProductId)
+                mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + authorizedUser + "/" + cartProduct1Id)
                                 .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isOk());
 
-                CartProduct cartProductAfterDeleteAttempt = getCartProductFromDB("Test Cart Product 1");
+                CartProduct cartProductAfterDeleteAttempt = getCartProductFromDB(cartProduct1Id);
                 assertNull(cartProductAfterDeleteAttempt);
             }
         }
