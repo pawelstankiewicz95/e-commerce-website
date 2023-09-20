@@ -400,4 +400,42 @@ public class OrderControllerIT extends BaseIT {
             testUnauthorizedFind();
         }
     }
+
+    @Nested
+    class FindOrdersByCustomerEmailTests {
+        private String findOrderByCustomerEmailUri = "/api/orders/customer";
+
+        private void testUnauthorizedFind() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.get(findOrderByCustomerEmailUri)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("customerEmail", "email1@example.com"))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @WithMockUser(authorities = "admin")
+        void shouldFindOrderByCustomerEmailForAuthorizedUser() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.get(findOrderByCustomerEmailUri)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("customerEmail", "email1@example.com"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.[0].user.email").value(authorizedUserEmail))
+                    .andExpect(jsonPath("$.[0].customer.firstName").value("First Name One"))
+                    .andExpect(jsonPath("$.[0].shippingAddress.city").value("City One"))
+                    .andExpect(jsonPath("$.[0].summary.totalCartValue").value("5"))
+                    .andExpect(jsonPath("$.[0].orderProducts.[0].name").value("Test Product One"));
+        }
+
+        @Test
+        @WithMockUser(unauthorizedUserEmail)
+        void shouldNotFindOrderByCustomerEmailForUnauthorizedUser() throws Exception {
+            testUnauthorizedFind();
+        }
+
+        @Test
+        @WithAnonymousUser
+        void shouldNotFindOrderByCustomerEmailForAnonymousUser() throws Exception {
+            testUnauthorizedFind();
+        }
+    }
 }
