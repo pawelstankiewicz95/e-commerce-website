@@ -37,7 +37,7 @@ public class OrderController {
         return new ResponseEntity<>(ordersDto, HttpStatus.OK);
     }
 
-    @PreAuthorize("(hasAuthority('admin')) or (#principal?.name == #orderDto.user.email)")
+    @PreAuthorize("hasAuthority('admin')")
     @GetMapping("/orders/customer")
     public ResponseEntity<List<OrderDto>> findOrdersByCustomerEmail(@RequestParam("customerEmail") String customerEmail, Principal principal){
         List<OrderDto> ordersDto = orderService.findByCustomerEmail(customerEmail);
