@@ -20,6 +20,9 @@ public class OrderProduct {
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "product_id")
+    private Long productId;
+
     @Column(name = "quantity")
     private int quantity;
 

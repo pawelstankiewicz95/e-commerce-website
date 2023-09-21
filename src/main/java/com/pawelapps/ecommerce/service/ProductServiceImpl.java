@@ -51,7 +51,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Product> getProductsByCategoryId(Long id) {
-       return productRepository.findByProductCategoryId(id);
+        return productRepository.findByProductCategoryId(id);
     }
 
     @Override
@@ -59,5 +59,16 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findByNameLikeOrSkuLike(nameOrSku);
     }
 
+    @Override
+    public Product decreaseProductQuantity(Long productId, int quantityToDecrease) {
+        Product product = getProductById(productId);
+        int newQuantity = product.getUnitsInStock() - quantityToDecrease;
 
+        if (newQuantity < 0) {
+            throw new IllegalArgumentException("Not enough quantity available for the product.");
+        }
+
+        product.setUnitsInStock(newQuantity);
+        return productRepository.save(product);
+    }
 }

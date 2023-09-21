@@ -79,6 +79,7 @@ DROP TABLE IF EXISTS `order_item`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `order_item` (
   `id` bigint NOT NULL AUTO_INCREMENT,
+  `product_id` bigint DEFAULT NULL,
   `quantity` int DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `description` varchar(600) DEFAULT NULL,

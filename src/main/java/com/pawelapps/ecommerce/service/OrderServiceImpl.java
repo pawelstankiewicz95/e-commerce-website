@@ -1,10 +1,10 @@
 package com.pawelapps.ecommerce.service;
 
 import com.pawelapps.ecommerce.dao.OrderRepository;
+import com.pawelapps.ecommerce.dao.ProductRepository;
 import com.pawelapps.ecommerce.dto.OrderDto;
 import com.pawelapps.ecommerce.entity.Order;
 import com.pawelapps.ecommerce.entity.OrderProduct;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,17 +17,26 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
 
     private OrderRepository orderRepository;
+    private ProductService productService;
 
     @Autowired
-    OrderServiceImpl(OrderRepository orderRepository, ModelMapper modelMapper) {
+    OrderServiceImpl(OrderRepository orderRepository, ProductService productService) {
         this.orderRepository = orderRepository;
+        this.productService = productService;
     }
 
     @Override
     public OrderDto saveOrder(OrderDto orderDto) {
         Order order = this.mapOrderDtoToOrder(orderDto);
+
+        for (OrderProduct op : order.getOrderProducts()) {
+            productService.decreaseProductQuantity(op.getProductId(), op.getQuantity());
+        }
+
         orderRepository.save(order);
+
         orderDto.setId(order.getId());
+
         return orderDto;
     }
 

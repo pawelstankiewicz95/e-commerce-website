@@ -19,4 +19,6 @@ public interface ProductService {
     List<Product> getProductsByCategoryId(Long id);
 
     List<Product> getProductsByNameOrSku(String nameOrSku);
+
+    Product decreaseProductQuantity(Long productId, int quantityToDecrease);
 }
