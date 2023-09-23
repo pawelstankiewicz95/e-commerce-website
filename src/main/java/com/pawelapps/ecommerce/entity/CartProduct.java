@@ -20,9 +20,6 @@ public class CartProduct {
     @Column(name = "PK_cart_product_id")
     private Long cartProductId;
 
-    @Column(name = "product_id")
-    private Long productId;
-
     @Column(name = "quantity")
     private int quantity;
 
@@ -42,4 +39,8 @@ public class CartProduct {
     @JoinColumn(name = "cart_id", referencedColumnName = "id")
     @JsonIgnoreProperties("cart")
     private Cart cart;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    private Product product;
 }

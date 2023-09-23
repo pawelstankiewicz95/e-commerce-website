@@ -1,11 +1,7 @@
 package com.pawelapps.ecommerce.dto;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.pawelapps.ecommerce.entity.Cart;
-import jakarta.persistence.Column;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.pawelapps.ecommerce.entity.Product;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -17,7 +13,7 @@ import java.math.BigDecimal;
 @Builder
 public class CartProductDto {
     private Long cartProductId;
-    private Long productId;
+    private Product product;
     private int quantity;
     private String name;
     private String description;
