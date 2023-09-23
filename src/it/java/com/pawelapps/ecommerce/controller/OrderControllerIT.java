@@ -225,15 +225,19 @@ public class OrderControllerIT extends BaseIT {
             orderProductForSave1 = OrderProduct.builder()
                     .name("Saved Product One")
                     .description("Saved Description One")
-                    .quantity(1)
+                    .quantity(20)
                     .unitPrice(BigDecimal.valueOf(1))
                     .build();
+
 
             orderProductForSave2 = OrderProduct.builder()
                     .name("Saved Product Two")
                     .description("Saved Description Two")
-                    .quantity(1)
+                    .quantity(20)
                     .unitPrice(BigDecimal.valueOf(1)).build();
+
+            entityManager.persist(orderProductForSave1);
+            entityManager.persist(orderProductForSave2);
 
             orderProductsForSave = new ArrayList<>();
             orderProductsForSave.add(orderProductForSave1);

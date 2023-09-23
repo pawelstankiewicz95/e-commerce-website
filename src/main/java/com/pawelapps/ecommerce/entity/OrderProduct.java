@@ -20,9 +20,6 @@ public class OrderProduct {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "product_id")
-    private Long productId;
-
     @Column(name = "quantity")
     private int quantity;
 
@@ -42,4 +39,8 @@ public class OrderProduct {
     @JoinColumn(name = "order_id", referencedColumnName = "id")
     @JsonIgnoreProperties("orderProducts")
     private Order order;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    private Product product;
 }
