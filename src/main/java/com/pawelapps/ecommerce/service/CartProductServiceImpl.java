@@ -47,18 +47,8 @@ public class CartProductServiceImpl implements CartProductService {
     }
 
     @Override
-    public List<CartProduct> getAllCartProducts() {
-        return this.cartProductRepository.findAll();
-    }
-
-    @Override
     public CartProduct updateCartProduct(CartProduct cartProduct) {
         return this.cartProductRepository.save(cartProduct);
-    }
-
-    @Override
-    public void deleteCartProductById(Long surrogateId) {
-
     }
 
     @Override
@@ -68,12 +58,12 @@ public class CartProductServiceImpl implements CartProductService {
     }
 
     @Override
-    public Integer increaseCartProductQuantityByOne(String email, Long id) {
+    public Integer increaseCartProductQuantityByOne(Long id) {
         Integer updatedRows;
         CartProduct cartProduct = cartProductRepository.findById(id).orElseThrow();
         Product product = productRepository.findById(cartProduct.getProduct().getId()).orElseThrow(() -> new NotFoundException("Product with id " + id + " doesn't exist"));
         if (cartProduct.getQuantity() < product.getUnitsInStock()) {
-            updatedRows = cartProductRepository.increaseCartProductQuantityByOne(email, id);
+            updatedRows = cartProductRepository.increaseCartProductQuantityByOne(id);
         } else {
             throw new IllegalStateException("Not enough units in stock");
         }
@@ -81,11 +71,11 @@ public class CartProductServiceImpl implements CartProductService {
     }
 
     @Override
-    public Integer decreaseCartProductQuantityByOne(String email, Long id) {
+    public Integer decreaseCartProductQuantityByOne(Long id) {
         Integer updatedRows;
         CartProduct cartProduct = cartProductRepository.findById(id).orElseThrow(() -> new NotFoundException("Product with id " + id + " doesn't exist"));
         if (cartProduct.getQuantity() != 0) {
-            updatedRows = cartProductRepository.decreaseCartProductQuantityByOne(email, id);
+            updatedRows = cartProductRepository.decreaseCartProductQuantityByOne(id);
         } else {
             throw new IllegalStateException("Value can not be lower than 0");
         }
@@ -93,8 +83,8 @@ public class CartProductServiceImpl implements CartProductService {
     }
 
     @Override
-    public void deleteCartProduct(String email, Long productId) {
-        cartProductRepository.deleteCartProduct(email, productId);
+    public void deleteCartProduct(Long cartProductId) {
+        cartProductRepository.deleteCartProduct(cartProductId);
     }
 
     @Override

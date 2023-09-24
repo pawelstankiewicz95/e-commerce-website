@@ -14,16 +14,16 @@ public interface CartProductRepository extends JpaRepository<CartProduct, Long> 
     List<CartProduct> findCartProductsByUserEmail(String email);
 
     @Modifying
-    @Query("UPDATE CartProduct cp SET cp.quantity = cp.quantity + 1 WHERE cp.id = :productId AND cp.cart.id IN (SELECT c.id FROM Cart c JOIN c.user u WHERE u.email = :email)")
-    Integer increaseCartProductQuantityByOne(@Param("email") String email, @Param("productId") Long cartProductId);
+    @Query("UPDATE CartProduct cp SET cp.quantity = cp.quantity + 1 WHERE cp.id = :cartProductId")
+    Integer increaseCartProductQuantityByOne(@Param("cartProductId") Long cartProductId);
 
     @Modifying
-    @Query("UPDATE CartProduct cp SET cp.quantity = cp.quantity -1 WHERE cp.id = :productId AND cp.cart.id IN (SELECT c.id FROM Cart c JOIN c.user u WHERE u.email = :email)")
-    Integer decreaseCartProductQuantityByOne(@Param("email") String email, @Param("productId") Long cartProductId);
+    @Query("UPDATE CartProduct cp SET cp.quantity = cp.quantity -1 WHERE cp.id = :cartProductId")
+    Integer decreaseCartProductQuantityByOne(@Param("cartProductId") Long cartProductId);
 
     @Modifying
-    @Query("DELETE FROM CartProduct cp WHERE cp.id = :productId AND cp.cart.id IN (SELECT c.id FROM Cart c JOIN c.user u WHERE u.email = :email)")
-    void deleteCartProduct(@Param("email")String email, @Param("productId") Long productId);
+    @Query("DELETE FROM CartProduct cp WHERE cp.id = :cartProductId")
+    void deleteCartProduct(@Param("cartProductId") Long cartProductId);
 
     @Modifying
     @Query("DELETE FROM CartProduct cp WHERE cp.cart.id IN (SELECT c.id FROM Cart c JOIN c.user u WHERE u.email = :email)")

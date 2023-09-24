@@ -34,14 +34,14 @@ public class CartProductController {
     @PutMapping("/cart-products/increase/{userEmail}/{productId}")
     @PreAuthorize("#principal?.name == #userEmail")
     public ResponseEntity<Integer> increaseCartProductQuantityByOne(@PathVariable("userEmail") String userEmail, @PathVariable("productId") Long id, Principal principal) {
-        Integer updatedRows = cartProductService.increaseCartProductQuantityByOne(userEmail, id);
+        Integer updatedRows = cartProductService.increaseCartProductQuantityByOne(id);
         return new ResponseEntity<>(updatedRows, HttpStatus.OK);
     }
 
     @PutMapping("/cart-products/decrease/{userEmail}/{productId}")
     @PreAuthorize("#principal?.name == #userEmail")
     public ResponseEntity<Integer> decreaseCartProductQuantityByOne(@PathVariable("userEmail") String userEmail, @PathVariable("productId") Long id, Principal principal) {
-        Integer updatedRows = cartProductService.decreaseCartProductQuantityByOne(userEmail, id);
+        Integer updatedRows = cartProductService.decreaseCartProductQuantityByOne(id);
         return new ResponseEntity<>(updatedRows, HttpStatus.OK);
     }
 
@@ -54,8 +54,8 @@ public class CartProductController {
 
     @DeleteMapping("cart-products/{userEmail}/{productId}")
     @PreAuthorize("#principal?.name == #userEmail")
-    public ResponseEntity<?> deleteCartProductByUserEmailAndProductId(@PathVariable("userEmail") String userEmail, @PathVariable("productId") Long id, Principal principal) {
-        cartProductService.deleteCartProduct(userEmail, id);
+    public ResponseEntity<?> deleteCartProduct(@PathVariable("userEmail") String userEmail, @PathVariable("productId") Long id, Principal principal) {
+        cartProductService.deleteCartProduct(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
