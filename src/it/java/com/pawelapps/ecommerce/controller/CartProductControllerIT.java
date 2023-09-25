@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.pawelapps.ecommerce.BaseIT;
 import com.pawelapps.ecommerce.dto.CartProductDto;
-import com.pawelapps.ecommerce.entity.Cart;
-import com.pawelapps.ecommerce.entity.CartProduct;
-import com.pawelapps.ecommerce.entity.User;
+import com.pawelapps.ecommerce.entity.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
@@ -50,6 +48,10 @@ public class CartProductControllerIT extends BaseIT {
     private final String authorizedUser = "authorized@example.com";
     private final String unauthorizedUser = "unauthorized@example.com";
 
+    private Product product1;
+    private Product product2;
+    private ProductCategory productCategory;
+
     private CartProduct getCartProductFromDB(Long id) {
         CartProduct cartProductFromDB;
         TypedQuery<CartProduct> query = entityManager.createQuery(
@@ -57,23 +59,40 @@ public class CartProductControllerIT extends BaseIT {
         query.setParameter("id", id);
         try {
             cartProductFromDB = query.getSingleResult();
+            entityManager.clear();
         } catch (NoResultException noResultException) {
             cartProductFromDB = null;
         }
 
-
-        entityManager.clear();
-
         return cartProductFromDB;
     }
 
+
+    @BeforeEach
+    void setUp() {
+        productCategory = ProductCategory.builder().categoryName("Cart Product Tests Category").build();
+        entityManager.persist(productCategory);
+        entityManager.flush();
+        product1 = Product.builder().productCategory(productCategory).name("Test Product 1").unitsInStock(10).build();
+        product2 = Product.builder().productCategory(productCategory).name("Test Product 2").unitsInStock(1).build();
+        entityManager.persist(product1);
+        entityManager.persist(product2);
+        entityManager.flush();
+    }
+
     @Nested
-    class TestsWithNoSetUp {
+    class TestsWithNoCartSetUp {
 
         @Nested
         class saveCartProductTests {
-            private CartProductDto cartProductDto1 = CartProductDto.builder().productId(1L).name("Test Cart Product 1").quantity(1)
-                    .build();
+            private CartProductDto cartProductDto1;
+
+            @BeforeEach
+            void setUp() {
+                cartProductDto1 = CartProductDto.builder().product(product1).name(product1.getName()).quantity(1)
+                        .build();
+            }
+
 
             private void testUnauthorizedSave() throws Exception {
                 mockMvc.perform(MockMvcRequestBuilders.post(uri + "/" + authorizedUser)
@@ -99,8 +118,6 @@ public class CartProductControllerIT extends BaseIT {
             @Test
             @WithMockUser(username = authorizedUser)
             void shouldSaveCartProduct() throws Exception {
-                CartProductDto cartProductDto1 = CartProductDto.builder().productId(1L).name("Test Cart Product 1").quantity(1)
-                        .build();
                 MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(uri + "/" + authorizedUser)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(cartProductDto1)))
@@ -110,7 +127,7 @@ public class CartProductControllerIT extends BaseIT {
                 Long id = JsonPath.parse(content).read("$.cartProductId", Long.class);
 
                 CartProduct cartProductFromDB = getCartProductFromDB(id);
-                assertEquals("Test Cart Product 1", cartProductFromDB.getName(), "Saved cart product should exist in database");
+                assertEquals("Test Product 1", cartProductFromDB.getName(), "Saved cart product should exist in database");
 
                 Cart createdCart = cartProductFromDB.getCart();
                 assertNotNull(createdCart, "Cart should be created");
@@ -137,9 +154,9 @@ public class CartProductControllerIT extends BaseIT {
 
         @BeforeEach
         void setUpDataBase() {
-            cartProduct1 = CartProduct.builder().productId(1L).name("Test Cart Product 1").quantity(1)
+            cartProduct1 = CartProduct.builder().product(product1).name(product1.getName()).quantity(5)
                     .build();
-            cartProduct2 = CartProduct.builder().productId(2L).name("Test Cart Product 2").quantity(1)
+            cartProduct2 = CartProduct.builder().product(product2).name(product2.getName()).quantity(1)
                     .build();
             user = User.builder().email(authorizedUser).build();
             cart = Cart.builder().user(user).build();
@@ -187,6 +204,7 @@ public class CartProductControllerIT extends BaseIT {
 
             private void testUnauthorizedIncreaseAttempt() throws Exception {
                 Long cartProduct1Id = cartProduct1.getCartProductId();
+                assertNotNull(cartProduct1Id);
                 CartProduct initialCartProduct = getCartProductFromDB(cartProduct1Id);
                 int initialCartProductQuantity = initialCartProduct.getQuantity();
 
@@ -224,6 +242,7 @@ public class CartProductControllerIT extends BaseIT {
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$").value("1"));
 
+                entityManager.clear();
 
                 CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB(cartProduct1Id);
                 int cartProductQuantityAfterUpdateAttempt = cartProductAfterUpdateAttempt.getQuantity();
@@ -272,6 +291,8 @@ public class CartProductControllerIT extends BaseIT {
                 mockMvc.perform(MockMvcRequestBuilders.put(uri + "/decrease/" + authorizedUser + "/" + cartProduct1Id)
                                 .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isOk());
+
+                entityManager.clear();
 
                 CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB(cartProduct1Id);
                 int cartProductQuantityAfterUpdateAttempt = cartProductAfterUpdateAttempt.getQuantity();
