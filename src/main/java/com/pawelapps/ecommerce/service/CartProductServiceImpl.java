@@ -2,9 +2,11 @@ package com.pawelapps.ecommerce.service;
 
 import com.pawelapps.ecommerce.dao.CartProductRepository;
 import com.pawelapps.ecommerce.dao.CartRepository;
+import com.pawelapps.ecommerce.dao.ProductRepository;
 import com.pawelapps.ecommerce.dto.CartProductDto;
 import com.pawelapps.ecommerce.entity.Cart;
 import com.pawelapps.ecommerce.entity.CartProduct;
+import com.pawelapps.ecommerce.entity.Product;
 import com.pawelapps.ecommerce.entity.User;
 import com.pawelapps.ecommerce.exception.NotFoundException;
 import jakarta.persistence.EntityManager;
@@ -14,9 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @Transactional
@@ -24,14 +24,16 @@ public class CartProductServiceImpl implements CartProductService {
 
     private final CartProductRepository cartProductRepository;
     private final CartRepository cartRepository;
+    private final ProductRepository productRepository;
 
     @PersistenceContext
-    private  EntityManager entityManager;
+    private EntityManager entityManager;
 
     @Autowired
-    public CartProductServiceImpl(CartProductRepository cartProductRepository, CartRepository cartRepository) {
+    public CartProductServiceImpl(CartProductRepository cartProductRepository, CartRepository cartRepository, ProductRepository productRepository) {
         this.cartProductRepository = cartProductRepository;
         this.cartRepository = cartRepository;
+        this.productRepository = productRepository;
     }
 
     @Override
@@ -45,18 +47,8 @@ public class CartProductServiceImpl implements CartProductService {
     }
 
     @Override
-    public List<CartProduct> getAllCartProducts() {
-        return this.cartProductRepository.findAll();
-    }
-
-    @Override
     public CartProduct updateCartProduct(CartProduct cartProduct) {
         return this.cartProductRepository.save(cartProduct);
-    }
-
-    @Override
-    public void deleteCartProductById(Long surrogateId) {
-
     }
 
     @Override
@@ -66,20 +58,33 @@ public class CartProductServiceImpl implements CartProductService {
     }
 
     @Override
-    public Integer increaseCartProductQuantityByOne(String email, Long id) {
-        Integer updatedRows = cartProductRepository.increaseCartProductQuantityByOne(email, id);
+    public Integer increaseCartProductQuantityByOne(Long id) {
+        Integer updatedRows;
+        CartProduct cartProduct = cartProductRepository.findById(id).orElseThrow();
+        Product product = productRepository.findById(cartProduct.getProduct().getId()).orElseThrow(() -> new NotFoundException("Product with id " + id + " doesn't exist"));
+        if (cartProduct.getQuantity() < product.getUnitsInStock()) {
+            updatedRows = cartProductRepository.increaseCartProductQuantityByOne(id);
+        } else {
+            throw new IllegalStateException("Not enough units in stock");
+        }
         return updatedRows;
     }
 
     @Override
-    public Integer decreaseCartProductQuantityByOne(String email, Long id) {
-        Integer updatedRows = cartProductRepository.decreaseCartProductQuantityByOne(email, id);
+    public Integer decreaseCartProductQuantityByOne(Long id) {
+        Integer updatedRows;
+        CartProduct cartProduct = cartProductRepository.findById(id).orElseThrow(() -> new NotFoundException("Product with id " + id + " doesn't exist"));
+        if (cartProduct.getQuantity() != 0) {
+            updatedRows = cartProductRepository.decreaseCartProductQuantityByOne(id);
+        } else {
+            throw new IllegalStateException("Value can not be lower than 0");
+        }
         return updatedRows;
     }
 
     @Override
-    public void deleteCartProduct(String email, Long productId) {
-        cartProductRepository.deleteCartProduct(email, productId);
+    public void deleteCartProduct(Long cartProductId) {
+        cartProductRepository.deleteCartProduct(cartProductId);
     }
 
     @Override

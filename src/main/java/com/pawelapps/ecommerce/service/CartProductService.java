@@ -11,19 +11,15 @@ public interface CartProductService {
 
     CartProduct getCartProductById(Long surrogateId);
 
-    List<CartProduct> getAllCartProducts();
-
     CartProduct updateCartProduct(CartProduct cartProduct);
-
-    void deleteCartProductById(Long surrogateId);
 
     List<CartProduct> findCartProductsByUserEmail(String email);
 
-    Integer increaseCartProductQuantityByOne(String email, Long id);
+    Integer increaseCartProductQuantityByOne(Long id);
 
-    Integer decreaseCartProductQuantityByOne(String email, Long id);
+    Integer decreaseCartProductQuantityByOne(Long id);
 
-    void deleteCartProduct(String email, Long productId);
+    void deleteCartProduct(Long productId);
 
     void deleteAllCartProductsByUserEmail(String email);
 
