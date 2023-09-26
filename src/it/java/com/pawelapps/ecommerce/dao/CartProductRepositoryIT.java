@@ -67,7 +67,7 @@ public class CartProductRepositoryIT extends BaseIT {
         assertNotNull(cartProductBeforeUpdate, "Object should not be null");
         int initialQuantity = cartProductBeforeUpdate.getQuantity();
 
-        Integer updatedRows = cartProductRepository.increaseCartProductQuantityByOne(userEmail, cartProductId);
+        Integer updatedRows = cartProductRepository.increaseCartProductQuantityByOne(cartProductId);
 
         entityManager.flush();
         entityManager.clear();
@@ -89,7 +89,7 @@ public class CartProductRepositoryIT extends BaseIT {
         assertNotNull(cartProductBeforeUpdate, "Object should not be null");
         int initialQuantity = cartProductBeforeUpdate.getQuantity();
 
-        Integer updatedRows = cartProductRepository.decreaseCartProductQuantityByOne(userEmail, cartProductId);
+        Integer updatedRows = cartProductRepository.decreaseCartProductQuantityByOne(cartProductId);
 
         entityManager.flush();
         entityManager.clear();
@@ -110,7 +110,7 @@ public class CartProductRepositoryIT extends BaseIT {
         CartProduct cartProductFromDb = cartProductRepository.findById(cartProductId).orElse(null);
         assertNotNull(cartProductFromDb, "cartProductFromDb should not be empty");
 
-        cartProductRepository.deleteCartProduct(userEmail, cartProductId);
+        cartProductRepository.deleteCartProduct(cartProductId);
         entityManager.flush();
         entityManager.clear();
 

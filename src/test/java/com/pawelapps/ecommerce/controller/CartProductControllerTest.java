@@ -148,26 +148,26 @@ public class CartProductControllerTest {
         Long cartProductId = 123L;
 
         private void testForbiddenAccessWhenIncreasingCartProductQuantity() throws Exception {
-            when(cartProductService.increaseCartProductQuantityByOne(eq(cartOwnerEmail), eq(cartProductId))).thenReturn(1);
+            when(cartProductService.increaseCartProductQuantityByOne(eq(cartProductId))).thenReturn(1);
 
             mockMvc.perform(MockMvcRequestBuilders.put("/api/cart-products/increase/{userEmail}/{productId}", cartOwnerEmail, cartProductId)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isForbidden());
 
-            verify(cartProductService, times(0)).increaseCartProductQuantityByOne(eq(cartOwnerEmail), eq(cartProductId));
+            verify(cartProductService, times(0)).increaseCartProductQuantityByOne(eq(cartProductId));
         }
 
         @Test
         @WithMockUser(username = cartOwnerEmail)
         void shouldIncreaseCartProductQuantityForCartOwner() throws Exception {
-            when(cartProductService.increaseCartProductQuantityByOne(eq(cartOwnerEmail), eq(cartProductId))).thenReturn(1);
+            when(cartProductService.increaseCartProductQuantityByOne(eq(cartProductId))).thenReturn(1);
 
             mockMvc.perform(MockMvcRequestBuilders.put("/api/cart-products/increase/{userEmail}/{productId}", cartOwnerEmail, cartProductId)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(content().string("1"));
 
-            verify(cartProductService, times(1)).increaseCartProductQuantityByOne(eq(cartOwnerEmail), eq(cartProductId));
+            verify(cartProductService, times(1)).increaseCartProductQuantityByOne(eq(cartProductId));
         }
 
         @Test
@@ -188,26 +188,26 @@ public class CartProductControllerTest {
         Long cartProductId = 123L;
 
         private void testForbiddenAccessWhenIncreasingCartProductQuantity() throws Exception {
-            when(cartProductService.decreaseCartProductQuantityByOne(eq(cartOwnerEmail), eq(cartProductId))).thenReturn(1);
+            when(cartProductService.decreaseCartProductQuantityByOne(eq(cartProductId))).thenReturn(1);
 
             mockMvc.perform(MockMvcRequestBuilders.put("/api/cart-products/decrease/{userEmail}/{productId}", cartOwnerEmail, cartProductId)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isForbidden());
 
-            verify(cartProductService, times(0)).decreaseCartProductQuantityByOne(eq(cartOwnerEmail), eq(cartProductId));
+            verify(cartProductService, times(0)).decreaseCartProductQuantityByOne(eq(cartProductId));
         }
 
         @Test
         @WithMockUser(username = cartOwnerEmail)
         void shouldDecreaseCartProductQuantityForCartOwner() throws Exception {
-            when(cartProductService.decreaseCartProductQuantityByOne(eq(cartOwnerEmail), eq(cartProductId))).thenReturn(1);
+            when(cartProductService.decreaseCartProductQuantityByOne(eq(cartProductId))).thenReturn(1);
 
             mockMvc.perform(MockMvcRequestBuilders.put("/api/cart-products/decrease/{userEmail}/{productId}", cartOwnerEmail, cartProductId)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(content().string("1"));
 
-            verify(cartProductService, times(1)).decreaseCartProductQuantityByOne(eq(cartOwnerEmail), eq(cartProductId));
+            verify(cartProductService, times(1)).decreaseCartProductQuantityByOne(eq(cartProductId));
         }
 
         @Test
@@ -261,7 +261,7 @@ public class CartProductControllerTest {
         private void testForbiddenAccessForDeleteCartProduct() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders.delete("/api/cart-products/{userEmail}/{productId}", cartOwnerEmail, cartProductId))
                     .andExpect(status().isForbidden());
-            verify(cartProductService, times(0)).deleteCartProduct(eq(cartOwnerEmail), eq(cartProductId));
+            verify(cartProductService, times(0)).deleteCartProduct(eq(cartProductId));
         }
 
         @Test
@@ -269,7 +269,7 @@ public class CartProductControllerTest {
         void shouldDeleteCartProductForCartOwner() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders.delete("/api/cart-products/{userEmail}/{productId}", cartOwnerEmail, cartProductId))
                     .andExpect(status().isOk());
-            verify(cartProductService, times(1)).deleteCartProduct(eq(cartOwnerEmail), eq(cartProductId));
+            verify(cartProductService, times(1)).deleteCartProduct(eq(cartProductId));
         }
 
         @Test
