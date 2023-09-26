@@ -187,7 +187,11 @@ public class OrderControllerIT extends BaseIT {
 
     @Nested
     class SaveOrderTests {
-        Customer customerForSave;
+        private Customer customerForSave;
+
+        private ProductCategory productCategory;
+        private Product product1;
+        private Product product2;
 
         private OrderDto authorizedUserOrderDtoForSave;
         private ShippingAddress shippingAddressForSave;
@@ -196,9 +200,28 @@ public class OrderControllerIT extends BaseIT {
         private OrderProduct orderProductForSave2;
         private List<OrderProduct> orderProductsForSave;
 
-
         @BeforeEach
         void setUp() {
+            productCategory = ProductCategory.builder().categoryName("Test Category").build();
+            entityManager.persist(productCategory);
+            entityManager.flush();
+
+            product1 = Product.builder().productCategory(productCategory).name("Saved Product One")
+                    .description("Saved Description One")
+                    .unitsInStock(20)
+                    .unitPrice(BigDecimal.valueOf(1)).build();
+
+            product2 = Product.builder()
+                    .productCategory(productCategory)
+                    .name("Saved Product Two")
+                    .description("Saved Description Two")
+                    .unitsInStock(1)
+                    .unitPrice(BigDecimal.valueOf(1)).build();
+
+            entityManager.persist(product1);
+            entityManager.persist(product2);
+            entityManager.flush();
+
             User authorizedUserForSave = User.builder()
                     .email(authorizedUserEmail)
                     .build();
@@ -218,26 +241,29 @@ public class OrderControllerIT extends BaseIT {
                     .build();
 
             summaryForSave = Summary.builder()
-                    .totalCartValue(BigDecimal.valueOf(2))
-                    .totalQuantityOfProducts(2)
+                    .totalCartValue(BigDecimal.valueOf(3))
+                    .totalQuantityOfProducts(3)
                     .build();
 
             orderProductForSave1 = OrderProduct.builder()
-                    .name("Saved Product One")
-                    .description("Saved Description One")
-                    .quantity(20)
-                    .unitPrice(BigDecimal.valueOf(1))
+                    .product(product1)
+                    .name(product1.getName())
+                    .description(product1.getDescription())
+                    .quantity(2)
+                    .unitPrice(product1.getUnitPrice())
                     .build();
 
 
             orderProductForSave2 = OrderProduct.builder()
-                    .name("Saved Product Two")
-                    .description("Saved Description Two")
-                    .quantity(20)
-                    .unitPrice(BigDecimal.valueOf(1)).build();
+                    .product(product2)
+                    .name(product2.getName())
+                    .description(product2.getDescription())
+                    .quantity(1)
+                    .unitPrice(product2.getUnitPrice()).build();
 
-            entityManager.persist(orderProductForSave1);
-            entityManager.persist(orderProductForSave2);
+     //       entityManager.persist(orderProductForSave1);
+         //   entityManager.persist(orderProductForSave2);
+         //   entityManager.flush();
 
             orderProductsForSave = new ArrayList<>();
             orderProductsForSave.add(orderProductForSave1);
