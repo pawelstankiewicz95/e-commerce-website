@@ -40,7 +40,7 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
 
 
-        //orderDto.setId(savedOrder.getId());
+        orderDto.setId(savedOrder.getId());
 
         return orderDto;
     }
