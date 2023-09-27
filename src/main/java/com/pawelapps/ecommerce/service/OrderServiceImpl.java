@@ -24,7 +24,7 @@ public class OrderServiceImpl implements OrderService {
     private EntityManager entityManager;
 
     @Autowired
-    OrderServiceImpl(OrderRepository orderRepository, ProductService productService) {
+    public OrderServiceImpl(OrderRepository orderRepository, ProductService productService) {
         this.orderRepository = orderRepository;
         this.productService = productService;
     }
@@ -102,6 +102,4 @@ public class OrderServiceImpl implements OrderService {
 
         return order;
     }
-
-
 }
