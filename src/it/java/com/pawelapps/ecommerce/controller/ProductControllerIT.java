@@ -92,15 +92,17 @@ public class ProductControllerIT extends BaseIT {
 
     private Product getProductFromDB(Long id) {
         Product productFromDB;
+
         TypedQuery<Product> query = entityManager.createQuery(
                 "SELECT p FROM Product p WHERE p.id = :id", Product.class);
         query.setParameter("id", id);
+
         try {
             productFromDB = query.getSingleResult();
         } catch (NoResultException noResultException) {
             productFromDB = null;
         }
-        entityManager.clear();
+
         return productFromDB;
     }
 
@@ -182,6 +184,7 @@ public class ProductControllerIT extends BaseIT {
                             .content(objectMapper.writeValueAsString(existingProduct)))
                     .andExpect(status().isForbidden());
 
+            entityManager.clear();
 
             Product productAfterUpdateAttempt = getProductFromDB(product1.getId());
             assertEquals(initialProductName, productAfterUpdateAttempt.getName(), "Name shouldn't be updated");
@@ -220,6 +223,8 @@ public class ProductControllerIT extends BaseIT {
                     .andExpect(jsonPath("$.name").value("Updated Name"))
                     .andExpect(jsonPath("$.description").value("Updated Description"));
 
+            entityManager.clear();
+
             Product updatedProduct = getProductFromDB(product1.getId());
             assertEquals(updatedProduct.getName(), "Updated Name");
             assertEquals(updatedProduct.getDescription(), "Updated Description");
@@ -239,6 +244,8 @@ public class ProductControllerIT extends BaseIT {
 
             mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + existingProduct.getId()))
                     .andExpect(status().isForbidden());
+
+            entityManager.clear();
 
             Optional<Product> optionalProduct = Optional.ofNullable(getProductFromDB(product2.getId()));
             assertTrue(optionalProduct.isPresent(), "Optional product should not be empty");
@@ -265,6 +272,8 @@ public class ProductControllerIT extends BaseIT {
 
             mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + existingProduct.getId()))
                     .andExpect(status().isOk());
+
+            entityManager.clear();
 
             Optional<Product> optionalProduct = Optional.ofNullable(getProductFromDB(product2.getId()));
             assertTrue(optionalProduct.isEmpty(), "Optional product should be empty");
