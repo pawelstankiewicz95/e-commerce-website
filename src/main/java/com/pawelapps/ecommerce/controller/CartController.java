@@ -26,11 +26,4 @@ public class CartController {
         CartDto cartDto = cartService.getCartByUserEmail(userEmail);
         return new ResponseEntity<>(cartDto, HttpStatus.OK);
     }
-
-    @DeleteMapping("cart/{userEmail}")
-    @PreAuthorize("#principal?.name == #userEmail")
-    public ResponseEntity<?> deleteCartByUserEmail(@PathVariable("userEmail") String userEmail, Principal principal) {
-        cartService.deleteCartByUserEmail(userEmail);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
 }

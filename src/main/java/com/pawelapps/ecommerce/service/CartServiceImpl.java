@@ -4,14 +4,11 @@ import com.pawelapps.ecommerce.dao.CartRepository;
 import com.pawelapps.ecommerce.dto.CartDto;
 import com.pawelapps.ecommerce.entity.Cart;
 import com.pawelapps.ecommerce.entity.CartProduct;
-import com.pawelapps.ecommerce.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,7 +18,7 @@ public class CartServiceImpl implements CartService {
     private final CartRepository cartRepository;
 
     @Autowired
-    CartServiceImpl(CartRepository cartRepository) {
+    public CartServiceImpl(CartRepository cartRepository) {
         this.cartRepository = cartRepository;
     }
 
@@ -40,10 +37,4 @@ public class CartServiceImpl implements CartService {
             return null;
         }
     }
-
-    @Override
-    public void deleteCartByUserEmail(String userEmail) {
-        cartRepository.deleteByUserEmail(userEmail);
-    }
-
 }
