@@ -207,11 +207,11 @@ public class CartProductControllerIT extends BaseIT {
                 CartProduct initialCartProduct = getCartProductFromDB(cartProduct1Id);
                 int initialCartProductQuantity = initialCartProduct.getQuantity();
 
+                entityManager.clear();
+
                 mockMvc.perform(MockMvcRequestBuilders.put(uri + "/increase/" + authorizedUser + "/" + cartProduct1Id)
                                 .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isForbidden());
-
-                entityManager.clear();
 
                 CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB(cartProduct1Id);
                 int cartProductQuantityAfterUpdateAttempt = cartProductAfterUpdateAttempt.getQuantity();
@@ -238,12 +238,14 @@ public class CartProductControllerIT extends BaseIT {
                 CartProduct initialCartProduct = getCartProductFromDB(cartProduct1Id);
                 int initialCartProductQuantity = initialCartProduct.getQuantity();
 
+           //     entityManager.clear();
+
                 mockMvc.perform(MockMvcRequestBuilders.put(uri + "/increase/" + authorizedUser + "/" + cartProduct1Id)
                                 .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$").value("1"));
 
-                entityManager.clear();
+              entityManager.clear();
 
                 CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB(cartProduct1Id);
                 int cartProductQuantityAfterUpdateAttempt = cartProductAfterUpdateAttempt.getQuantity();
@@ -322,10 +324,10 @@ public class CartProductControllerIT extends BaseIT {
                 List<CartProduct> cartProducts = getAllCartProductsByUser(authorizedUser);
                 assertEquals(2, cartProducts.size());
 
+                entityManager.clear();
+
                 mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + authorizedUser))
                         .andExpect(status().isForbidden());
-
-                entityManager.clear();
 
                 List<CartProduct> cartProductsAfterDeleteAttempt = getAllCartProductsByUser(authorizedUser);
                 assertEquals(2, cartProductsAfterDeleteAttempt.size());
@@ -349,10 +351,10 @@ public class CartProductControllerIT extends BaseIT {
                 List<CartProduct> cartProducts = getAllCartProductsByUser(authorizedUser);
                 assertEquals(2, cartProducts.size());
 
+                entityManager.clear();
+
                 mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + authorizedUser))
                         .andExpect(status().isOk());
-
-                entityManager.clear();
 
                 List<CartProduct> cartProductsAfterDeleteAttempt = getAllCartProductsByUser(authorizedUser);
                 assertEquals(0, cartProductsAfterDeleteAttempt.size());
@@ -367,11 +369,11 @@ public class CartProductControllerIT extends BaseIT {
                 CartProduct initialCartProduct = getCartProductFromDB(cartProduct1Id);
                 assertNotNull(initialCartProduct);
 
+                entityManager.clear();
+
                 mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + authorizedUser + "/" + cartProduct1Id)
                                 .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isForbidden());
-
-                entityManager.clear();
 
                 CartProduct cartProductAfterDeleteAttempt = getCartProductFromDB(cartProduct1Id);
                 assertNotNull(cartProductAfterDeleteAttempt);
@@ -396,11 +398,11 @@ public class CartProductControllerIT extends BaseIT {
                 CartProduct initialCartProduct = getCartProductFromDB(cartProduct1Id);
                 assertNotNull(initialCartProduct);
 
+                entityManager.clear();
+
                 mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + authorizedUser + "/" + cartProduct1Id)
                                 .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isOk());
-
-                entityManager.clear();
 
                 CartProduct cartProductAfterDeleteAttempt = getCartProductFromDB(cartProduct1Id);
                 assertNull(cartProductAfterDeleteAttempt);

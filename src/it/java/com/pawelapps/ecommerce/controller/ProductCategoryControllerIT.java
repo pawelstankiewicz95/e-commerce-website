@@ -159,12 +159,12 @@ public class ProductCategoryControllerIT extends BaseIT {
 
             existingProductCategory.setCategoryName("Updated Name");
 
+            entityManager.clear();
+
             mockMvc.perform(MockMvcRequestBuilders.put(uri)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(existingProductCategory)))
                     .andExpect(status().isForbidden());
-
-            entityManager.clear();
 
             ProductCategory productCategoryAfterUpdateAttempt = getProductCategoryFromDB(productCategory1.getId());
             assertEquals(initialProductCategoryName, productCategoryAfterUpdateAttempt.getCategoryName(), "Name shouldn't be updated");
@@ -192,13 +192,13 @@ public class ProductCategoryControllerIT extends BaseIT {
 
             initialProductCategory.setCategoryName("Updated Name");
 
+            entityManager.clear();
+
             mockMvc.perform(MockMvcRequestBuilders.put(uri)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(initialProductCategory)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.categoryName").value("Updated Name"));
-
-            entityManager.clear();
 
             ProductCategory categoryAfterUpdate = getProductCategoryFromDB(productCategory1.getId());
 
@@ -215,11 +215,11 @@ public class ProductCategoryControllerIT extends BaseIT {
             assertNotNull(existingProductCategory);
             assertEquals("Test category 1", initialProductCategoryName);
 
+            entityManager.clear();
+
             Long existingProductCategoryId = existingProductCategory.getId();
             mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + existingProductCategoryId))
                     .andExpect(status().isForbidden());
-
-            entityManager.clear();
 
             Optional<ProductCategory> optionalProductCategory = Optional.ofNullable(getProductCategoryFromDB(productCategory1.getId()));
 
@@ -256,7 +256,7 @@ public class ProductCategoryControllerIT extends BaseIT {
             mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + existingProductCategoryId))
                     .andExpect(status().isOk());
 
-            entityManager.clear();
+           // entityManager.clear();
 
             Optional<ProductCategory> deletedProductCategory = Optional.ofNullable(getProductCategoryFromDB(productCategory1.getId()));
             assertTrue(deletedProductCategory.isEmpty(), "Product category should be deleted");

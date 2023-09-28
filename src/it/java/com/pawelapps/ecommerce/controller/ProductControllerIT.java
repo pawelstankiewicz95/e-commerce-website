@@ -179,12 +179,12 @@ public class ProductControllerIT extends BaseIT {
             existingProduct.setName("Updated Name");
             existingProduct.setDescription("Updated Description");
 
+            entityManager.clear();
+
             mockMvc.perform(MockMvcRequestBuilders.put(uri)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(existingProduct)))
                     .andExpect(status().isForbidden());
-
-            entityManager.clear();
 
             Product productAfterUpdateAttempt = getProductFromDB(product1.getId());
             assertEquals(initialProductName, productAfterUpdateAttempt.getName(), "Name shouldn't be updated");
@@ -216,14 +216,14 @@ public class ProductControllerIT extends BaseIT {
             existingProduct.setName("Updated Name");
             existingProduct.setDescription("Updated Description");
 
+            entityManager.clear();
+
             mockMvc.perform(MockMvcRequestBuilders.put(uri)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(existingProduct)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.name").value("Updated Name"))
                     .andExpect(jsonPath("$.description").value("Updated Description"));
-
-            entityManager.clear();
 
             Product updatedProduct = getProductFromDB(product1.getId());
             assertEquals(updatedProduct.getName(), "Updated Name");
@@ -242,10 +242,10 @@ public class ProductControllerIT extends BaseIT {
             assertEquals(existingProductName, "Test Product 2");
             assertEquals(existingProductDescription, "Product for testing 2");
 
+            entityManager.clear();
+
             mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + existingProduct.getId()))
                     .andExpect(status().isForbidden());
-
-            entityManager.clear();
 
             Optional<Product> optionalProduct = Optional.ofNullable(getProductFromDB(product2.getId()));
             assertTrue(optionalProduct.isPresent(), "Optional product should not be empty");
@@ -270,10 +270,10 @@ public class ProductControllerIT extends BaseIT {
             assertEquals(existingProductName, "Test Product 2");
             assertEquals(existingProductDescription, "Product for testing 2");
 
+            entityManager.clear();
+
             mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + existingProduct.getId()))
                     .andExpect(status().isOk());
-
-            entityManager.clear();
 
             Optional<Product> optionalProduct = Optional.ofNullable(getProductFromDB(product2.getId()));
             assertTrue(optionalProduct.isEmpty(), "Optional product should be empty");
