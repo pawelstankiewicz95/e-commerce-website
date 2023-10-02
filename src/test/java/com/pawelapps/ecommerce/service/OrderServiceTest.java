@@ -13,10 +13,14 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -32,32 +36,49 @@ public class OrderServiceTest {
     private ProductService productService;
 
     private Order order;
+    private List<Order> orders;
 
     private OrderDto orderDto;
 
     private Product product1;
-
     private Product product2;
+
+    private Summary summary;
+
     private OrderProduct orderProduct1;
     private OrderProduct orderProduct2;
 
+    private List<OrderProduct> orderProducts;
+
+    private User user;
+    private String userEmail;
+
+    private ProductCategory productCategory;
+
+    private ShippingAddress shippingAddress;
+
+    private Customer customer;
+
     @BeforeEach
     void setUp() {
-        ShippingAddress shippingAddress = ShippingAddress.builder()
+        shippingAddress = ShippingAddress.builder()
                 .country("Sample Country")
                 .city("Sample City")
                 .streetAddress("Sample Street 24/36")
                 .zipCode("12-345")
                 .build();
 
-        Customer customer = Customer.builder()
-                .firstName("John")
-                .lastName("Smith")
-                .email("jonsmith@email.com")
+        customer = Customer.builder()
+                .firstName("Test Customer First Name")
+                .lastName("Test Customer Last Name")
+                .email("customer@email.com")
                 .phoneNumber(123456789)
                 .build();
 
-        ProductCategory productCategory = ProductCategory.builder().categoryName("Test Category").build();
+        userEmail= "user@email.com";
+        user = User.builder().email(userEmail).build();
+
+        productCategory = ProductCategory.builder().categoryName("Test Category").build();
 
         product1 = Product.builder().id(1L).name("Test Product 1").productCategory(productCategory).unitsInStock(10).build();
         product2 = Product.builder().id(2L).name("Test Product 1").productCategory(productCategory).unitsInStock(5).build();
@@ -78,32 +99,36 @@ public class OrderServiceTest {
                 .imageUrl("assets/images/test-img.jpg")
                 .quantity(4).build();
 
-
-        Summary summary = Summary.builder()
+        summary = Summary.builder()
                 .totalCartValue(BigDecimal.valueOf(2.59))
                 .totalQuantityOfProducts(2)
                 .build();
 
         order = Order.builder()
+                .user(user)
                 .customer(customer)
                 .summary(summary)
                 .shippingAddress(shippingAddress)
                 .build();
+
         order.addOrderProduct(orderProduct1);
         order.addOrderProduct(orderProduct2);
 
+        orderProducts = new ArrayList<>();
+        orderProducts.add(orderProduct1);
+        orderProducts.add(orderProduct2);
+
         orderDto = OrderDto.builder()
+                .user(user)
                 .customer(customer)
                 .shippingAddress(shippingAddress)
                 .summary(summary)
                 .build();
 
-        List<OrderProduct> orderProducts = new ArrayList<>();
-        orderProducts.add(orderProduct1);
-        orderProducts.add(orderProduct2);
-
         orderDto.setOrderProducts(orderProducts);
 
+        orders = new ArrayList<>();
+        orders.add(order);
     }
 
     @Test
@@ -134,4 +159,18 @@ public class OrderServiceTest {
 
         verify(orderRepository, times(1)).save(any(Order.class));
     }
+
+
+    @Test
+    void shouldFindOrdersByUserEmail() {
+        when(orderRepository.findByUserEmail(userEmail)).thenReturn(orders);
+
+        List<OrderDto> ordersDto = orderService.findByUserEmail(userEmail);
+
+        assertEquals(ordersDto.size(), orders.size());
+
+        verify(orderRepository).findByUserEmail(userEmail);
+    }
 }
+
+
