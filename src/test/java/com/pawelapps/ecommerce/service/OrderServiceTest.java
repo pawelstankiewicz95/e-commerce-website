@@ -75,7 +75,7 @@ public class OrderServiceTest {
                 .phoneNumber(123456789)
                 .build();
 
-        userEmail= "user@email.com";
+        userEmail = "user@email.com";
         user = User.builder().email(userEmail).build();
 
         productCategory = ProductCategory.builder().categoryName("Test Category").build();
@@ -132,6 +132,42 @@ public class OrderServiceTest {
     }
 
     @Test
+    void shouldMapOrderDtoToOrder() {
+        OrderDto orderDto = OrderDto.builder()
+                .id(1L)
+                .customer(customer)
+                .shippingAddress(shippingAddress)
+                .summary(summary)
+                .user(user)
+                .orderProducts(orderProducts)
+                .build();
+
+        Order order = orderService.mapOrderDtoToOrder(orderDto);
+
+        assertEquals(orderDto.getId(), order.getId());
+        assertEquals(orderDto.getCustomer(), order.getCustomer());
+        assertEquals(orderDto.getShippingAddress(), order.getShippingAddress());
+        assertEquals(orderDto.getSummary(), order.getSummary());
+        assertEquals(orderDto.getUser(), order.getUser());
+        assertEquals(orderDto.getOrderProducts(), order.getOrderProducts());
+        assertEquals(orderDto.getOrderProducts().size(), order.getOrderProducts().size());
+    }
+
+    @Test
+    void shouldMapOrderToOrderDto() {
+        OrderDto orderDto = orderService.mapOrderToOrderDto(this.order);
+
+        assertEquals(order.getId(), orderDto.getId());
+        assertEquals(order.getCustomer(), orderDto.getCustomer());
+        assertEquals(order.getShippingAddress(), orderDto.getShippingAddress());
+        assertEquals(order.getSummary(), orderDto.getSummary());
+        assertEquals(order.getUser(), orderDto.getUser());
+        assertEquals(order.getOrderProducts(), orderDto.getOrderProducts());
+        assertEquals(order.getOrderProducts().size(), orderDto.getOrderProducts().size());
+
+    }
+
+    @Test
     void shouldSaveOrder() {
         when(productService.decreaseProductQuantity(eq(orderProduct1.getProduct().getId()), eq(orderProduct1.getQuantity())))
                 .thenAnswer((invocation) -> {
@@ -160,7 +196,6 @@ public class OrderServiceTest {
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 
-
     @Test
     void shouldFindOrdersByUserEmail() {
         when(orderRepository.findByUserEmail(userEmail)).thenReturn(orders);
@@ -171,6 +206,8 @@ public class OrderServiceTest {
 
         verify(orderRepository).findByUserEmail(userEmail);
     }
+
+
 }
 
 
