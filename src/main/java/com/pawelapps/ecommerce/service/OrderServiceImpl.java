@@ -75,7 +75,8 @@ public class OrderServiceImpl implements OrderService {
         return orderDto;
     }
 
-    private OrderDto mapOrderToOrderDto(Order order) {
+    @Override
+    public OrderDto mapOrderToOrderDto(Order order) {
         OrderDto orderDto = new OrderDto();
         orderDto.setId(order.getId());
         orderDto.setCustomer(order.getCustomer());
@@ -89,7 +90,8 @@ public class OrderServiceImpl implements OrderService {
         return orderDto;
     }
 
-    private Order mapOrderDtoToOrder(OrderDto orderDto) {
+    @Override
+    public Order mapOrderDtoToOrder(OrderDto orderDto) {
         Order order = new Order();
         order.setId(orderDto.getId());
         order.setCustomer(orderDto.getCustomer());
