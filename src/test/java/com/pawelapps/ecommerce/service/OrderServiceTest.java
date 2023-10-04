@@ -226,6 +226,11 @@ public class OrderServiceTest {
         OrderDto orderDtoAfterMethodExecution = orderService.findById(order.getId());
 
         assertNotNull(orderDtoAfterMethodExecution);
+        assertEquals(order.getId(), orderDtoAfterMethodExecution.getId());
+        assertEquals(order.getUser().getEmail(), orderDto.getUser().getEmail());
+        assertEquals(order.getOrderProducts().size(), orderDto.getOrderProducts().size());
+        assertEquals(order.getSummary().getTotalQuantityOfProducts(), orderDto.getSummary().getTotalQuantityOfProducts());
+        assertEquals(order.getShippingAddress().getCity(), orderDto.getShippingAddress().getCity());
 
         verify(orderRepository).findById(order.getId());
     }
