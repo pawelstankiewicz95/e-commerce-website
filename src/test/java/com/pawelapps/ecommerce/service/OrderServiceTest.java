@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -208,7 +209,7 @@ public class OrderServiceTest {
     }
 
     @Test
-    void shouldFindOrdersByCustomerEmail(){
+    void shouldFindOrdersByCustomerEmail() {
         when(orderRepository.findByCustomerEmail(customer.getEmail())).thenReturn(orders);
 
         List<OrderDto> ordersDto = orderService.findByCustomerEmail(customer.getEmail());
@@ -216,6 +217,19 @@ public class OrderServiceTest {
         assertEquals(ordersDto.size(), orders.size());
 
         verify(orderRepository).findByCustomerEmail(customer.getEmail());
+    }
+
+    @Test
+    void shouldFindOrderById() {
+        when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
+
+        OrderDto orderDtoAfterMethodCall = orderService.findById(order.getId());
+
+        assertNotNull(orderDtoAfterMethodCall);
+
+        verify(orderRepository).findById(order.getId());
+
+
     }
 
 
