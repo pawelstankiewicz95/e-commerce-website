@@ -207,6 +207,17 @@ public class OrderServiceTest {
         verify(orderRepository).findByUserEmail(userEmail);
     }
 
+    @Test
+    void shouldFindOrdersByCustomerEmail(){
+        when(orderRepository.findByCustomerEmail(customer.getEmail())).thenReturn(orders);
+
+        List<OrderDto> ordersDto = orderService.findByCustomerEmail(customer.getEmail());
+
+        assertEquals(ordersDto.size(), orders.size());
+
+        verify(orderRepository).findByCustomerEmail(customer.getEmail());
+    }
+
 
 }
 
