@@ -223,13 +223,24 @@ public class OrderServiceTest {
     void shouldFindOrderById() {
         when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
 
-        OrderDto orderDtoAfterMethodCall = orderService.findById(order.getId());
+        OrderDto orderDtoAfterMethodExecution = orderService.findById(order.getId());
 
-        assertNotNull(orderDtoAfterMethodCall);
+        assertNotNull(orderDtoAfterMethodExecution);
 
         verify(orderRepository).findById(order.getId());
+    }
 
+    @Test
+    void shouldGetAllOrders() {
+        when(orderRepository.findAll()).thenReturn(orders);
 
+        List<OrderDto> orderDtosAfterMethodExecution = orderService.getAllOrders();
+
+        assertEquals(orders.size(), orderDtosAfterMethodExecution.size());
+        assertEquals(1, orderDtosAfterMethodExecution.size());
+        assertEquals(2, orderDtosAfterMethodExecution.get(0).getOrderProducts().size());
+
+        verify(orderRepository).findAll();
     }
 
 
