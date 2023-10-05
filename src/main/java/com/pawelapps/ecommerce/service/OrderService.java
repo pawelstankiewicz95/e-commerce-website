@@ -15,4 +15,8 @@ public interface OrderService {
     List<OrderDto> findByUserEmail(String userEmail);
 
     OrderDto findById(Long id);
+
+    OrderDto mapOrderToOrderDto(Order order);
+
+    Order mapOrderDtoToOrder(OrderDto orderDto);
 }
