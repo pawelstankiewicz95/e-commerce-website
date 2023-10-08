@@ -92,15 +92,17 @@ public class ProductControllerIT extends BaseIT {
 
     private Product getProductFromDB(Long id) {
         Product productFromDB;
+
         TypedQuery<Product> query = entityManager.createQuery(
                 "SELECT p FROM Product p WHERE p.id = :id", Product.class);
         query.setParameter("id", id);
+
         try {
             productFromDB = query.getSingleResult();
         } catch (NoResultException noResultException) {
             productFromDB = null;
         }
-        entityManager.clear();
+
         return productFromDB;
     }
 
@@ -177,11 +179,12 @@ public class ProductControllerIT extends BaseIT {
             existingProduct.setName("Updated Name");
             existingProduct.setDescription("Updated Description");
 
+            entityManager.clear();
+
             mockMvc.perform(MockMvcRequestBuilders.put(uri)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(existingProduct)))
                     .andExpect(status().isForbidden());
-
 
             Product productAfterUpdateAttempt = getProductFromDB(product1.getId());
             assertEquals(initialProductName, productAfterUpdateAttempt.getName(), "Name shouldn't be updated");
@@ -213,6 +216,8 @@ public class ProductControllerIT extends BaseIT {
             existingProduct.setName("Updated Name");
             existingProduct.setDescription("Updated Description");
 
+            entityManager.clear();
+
             mockMvc.perform(MockMvcRequestBuilders.put(uri)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(existingProduct)))
@@ -236,6 +241,8 @@ public class ProductControllerIT extends BaseIT {
             String existingProductDescription = existingProduct.getDescription();
             assertEquals(existingProductName, "Test Product 2");
             assertEquals(existingProductDescription, "Product for testing 2");
+
+            entityManager.clear();
 
             mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + existingProduct.getId()))
                     .andExpect(status().isForbidden());
@@ -262,6 +269,8 @@ public class ProductControllerIT extends BaseIT {
             String existingProductDescription = existingProduct.getDescription();
             assertEquals(existingProductName, "Test Product 2");
             assertEquals(existingProductDescription, "Product for testing 2");
+
+            entityManager.clear();
 
             mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + existingProduct.getId()))
                     .andExpect(status().isOk());

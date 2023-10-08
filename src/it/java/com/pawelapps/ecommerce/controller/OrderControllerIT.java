@@ -74,8 +74,6 @@ public class OrderControllerIT extends BaseIT {
             order = null;
         }
 
-        entityManager.clear();
-
         return order;
     }
 
@@ -260,10 +258,6 @@ public class OrderControllerIT extends BaseIT {
                     .description(product2.getDescription())
                     .quantity(1)
                     .unitPrice(product2.getUnitPrice()).build();
-
-     //       entityManager.persist(orderProductForSave1);
-         //   entityManager.persist(orderProductForSave2);
-         //   entityManager.flush();
 
             orderProductsForSave = new ArrayList<>();
             orderProductsForSave.add(orderProductForSave1);

@@ -75,8 +75,6 @@ public class ProductCategoryControllerIT extends BaseIT {
             productCategoryFromDB = null;
         }
 
-        entityManager.clear();
-
         return productCategoryFromDB;
     }
 
@@ -161,6 +159,8 @@ public class ProductCategoryControllerIT extends BaseIT {
 
             existingProductCategory.setCategoryName("Updated Name");
 
+            entityManager.clear();
+
             mockMvc.perform(MockMvcRequestBuilders.put(uri)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(existingProductCategory)))
@@ -192,6 +192,8 @@ public class ProductCategoryControllerIT extends BaseIT {
 
             initialProductCategory.setCategoryName("Updated Name");
 
+            entityManager.clear();
+
             mockMvc.perform(MockMvcRequestBuilders.put(uri)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(initialProductCategory)))
@@ -212,6 +214,8 @@ public class ProductCategoryControllerIT extends BaseIT {
             String initialProductCategoryName = existingProductCategory.getCategoryName();
             assertNotNull(existingProductCategory);
             assertEquals("Test category 1", initialProductCategoryName);
+
+            entityManager.clear();
 
             Long existingProductCategoryId = existingProductCategory.getId();
             mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + existingProductCategoryId))
@@ -251,6 +255,8 @@ public class ProductCategoryControllerIT extends BaseIT {
             Long existingProductCategoryId = existingProductCategory.getId();
             mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + existingProductCategoryId))
                     .andExpect(status().isOk());
+
+           // entityManager.clear();
 
             Optional<ProductCategory> deletedProductCategory = Optional.ofNullable(getProductCategoryFromDB(productCategory1.getId()));
             assertTrue(deletedProductCategory.isEmpty(), "Product category should be deleted");

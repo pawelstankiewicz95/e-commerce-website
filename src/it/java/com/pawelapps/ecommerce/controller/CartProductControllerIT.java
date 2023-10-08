@@ -59,7 +59,6 @@ public class CartProductControllerIT extends BaseIT {
         query.setParameter("id", id);
         try {
             cartProductFromDB = query.getSingleResult();
-            entityManager.clear();
         } catch (NoResultException noResultException) {
             cartProductFromDB = null;
         }
@@ -208,6 +207,8 @@ public class CartProductControllerIT extends BaseIT {
                 CartProduct initialCartProduct = getCartProductFromDB(cartProduct1Id);
                 int initialCartProductQuantity = initialCartProduct.getQuantity();
 
+                entityManager.clear();
+
                 mockMvc.perform(MockMvcRequestBuilders.put(uri + "/increase/" + authorizedUser + "/" + cartProduct1Id)
                                 .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isForbidden());
@@ -237,12 +238,14 @@ public class CartProductControllerIT extends BaseIT {
                 CartProduct initialCartProduct = getCartProductFromDB(cartProduct1Id);
                 int initialCartProductQuantity = initialCartProduct.getQuantity();
 
+           //     entityManager.clear();
+
                 mockMvc.perform(MockMvcRequestBuilders.put(uri + "/increase/" + authorizedUser + "/" + cartProduct1Id)
                                 .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$").value("1"));
 
-                entityManager.clear();
+              entityManager.clear();
 
                 CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB(cartProduct1Id);
                 int cartProductQuantityAfterUpdateAttempt = cartProductAfterUpdateAttempt.getQuantity();
@@ -262,6 +265,8 @@ public class CartProductControllerIT extends BaseIT {
                 mockMvc.perform(MockMvcRequestBuilders.put(uri + "/decrease/" + authorizedUser + "/" + cartProduct1Id)
                                 .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isForbidden());
+
+                entityManager.clear();
 
                 CartProduct cartProductAfterUpdateAttempt = getCartProductFromDB(cartProduct1Id);
                 int cartProductQuantityAfterUpdateAttempt = cartProductAfterUpdateAttempt.getQuantity();
@@ -308,8 +313,9 @@ public class CartProductControllerIT extends BaseIT {
                 TypedQuery<CartProduct> getAllCartProductsQuery = entityManager
                         .createQuery("SELECT cp FROM CartProduct cp JOIN cp.cart c JOIN c.user u WHERE u.email = :email", CartProduct.class);
                 getAllCartProductsQuery.setParameter("email", userEmail);
+
                 List<CartProduct> cartProducts = getAllCartProductsQuery.getResultList();
-                entityManager.clear();
+
                 return cartProducts;
             }
 
@@ -317,6 +323,8 @@ public class CartProductControllerIT extends BaseIT {
 
                 List<CartProduct> cartProducts = getAllCartProductsByUser(authorizedUser);
                 assertEquals(2, cartProducts.size());
+
+                entityManager.clear();
 
                 mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + authorizedUser))
                         .andExpect(status().isForbidden());
@@ -343,6 +351,8 @@ public class CartProductControllerIT extends BaseIT {
                 List<CartProduct> cartProducts = getAllCartProductsByUser(authorizedUser);
                 assertEquals(2, cartProducts.size());
 
+                entityManager.clear();
+
                 mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + authorizedUser))
                         .andExpect(status().isOk());
 
@@ -358,6 +368,8 @@ public class CartProductControllerIT extends BaseIT {
                 Long cartProduct1Id = cartProduct1.getCartProductId();
                 CartProduct initialCartProduct = getCartProductFromDB(cartProduct1Id);
                 assertNotNull(initialCartProduct);
+
+                entityManager.clear();
 
                 mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + authorizedUser + "/" + cartProduct1Id)
                                 .contentType(MediaType.APPLICATION_JSON))
@@ -385,6 +397,8 @@ public class CartProductControllerIT extends BaseIT {
                 Long cartProduct1Id = cartProduct1.getCartProductId();
                 CartProduct initialCartProduct = getCartProductFromDB(cartProduct1Id);
                 assertNotNull(initialCartProduct);
+
+                entityManager.clear();
 
                 mockMvc.perform(MockMvcRequestBuilders.delete(uri + "/" + authorizedUser + "/" + cartProduct1Id)
                                 .contentType(MediaType.APPLICATION_JSON))
