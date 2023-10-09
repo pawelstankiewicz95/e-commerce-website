@@ -114,6 +114,7 @@ public class CartProductServiceImpl implements CartProductService {
 
         CartProduct savedCartProduct = cartProductRepository.save(cartProduct);
         cartProductDto.setCartProductId(savedCartProduct.getCartProductId());
+        cartProductDto.setCart(cartProduct.getCart());
 
         return cartProductDto;
     }
