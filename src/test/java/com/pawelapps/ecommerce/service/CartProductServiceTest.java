@@ -89,6 +89,20 @@ public class CartProductServiceTest {
 
         verify(cartRepository).findByUserEmail(userEmail);
         verify(cartProductRepository).save(any(CartProduct.class));
+    }
 
+    @Test
+    void shouldSaveCartProductWhenCartIsNotPresent() {
+        when(cartRepository.findByUserEmail(userEmail)).thenReturn(null);
+        when(cartProductRepository.save(any(CartProduct.class))).thenReturn(cartProduct);
+
+        CartProductDto savedCartProductDto = cartProductService.saveCartProductToCart(cartProductDto, userEmail);
+
+        assertNotNull(savedCartProductDto);
+        assertNotNull(savedCartProductDto.getCartProductId());
+        assertNotNull(savedCartProductDto.getCart());
+
+        verify(cartRepository).findByUserEmail(userEmail);
+        verify(cartProductRepository).save(any(CartProduct.class));
     }
 }
