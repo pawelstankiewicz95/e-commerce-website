@@ -29,8 +29,6 @@ public class CartProductServiceTest {
     @Autowired
     private CartProductService cartProductService;
 
-
-
     private final String userEmail = "test@email.com";
 
     private User user;

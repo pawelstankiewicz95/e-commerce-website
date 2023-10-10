@@ -94,14 +94,28 @@ public class CartProductServiceImpl implements CartProductService {
 
     public CartProductDto saveCartProductToCart(CartProductDto cartProductDto, String userEmail) {
 
+        Cart cart = getOrCreateCart(userEmail);
+
+        CartProduct cartProduct = createCartProductFromDto(cartProductDto, cart);
+
+        CartProduct savedCartProduct = cartProductRepository.save(cartProduct);
+        cartProductDto.setCartProductId(savedCartProduct.getCartProductId());
+        cartProductDto.setCart(cartProduct.getCart());
+
+        return cartProductDto;
+    }
+
+    public Cart getOrCreateCart(String userEmail) {
         Cart cart = cartRepository.findByUserEmail(userEmail);
         if (cart == null) {
             User user = User.builder().email(userEmail).build();
-            List<CartProduct> cartProducts = new ArrayList<>();
-            cart = Cart.builder().user(user).cartProducts(cartProducts).build();
-            entityManager.persist(cart);
-            entityManager.flush();
+            cart = Cart.builder().user(user).cartProducts(new ArrayList<>()).build();
+            cartRepository.save(cart);
         }
+        return cart;
+    }
+
+    public CartProduct createCartProductFromDto(CartProductDto cartProductDto, Cart cart) {
         CartProduct cartProduct = CartProduct.builder()
                 .product(cartProductDto.getProduct())
                 .quantity(cartProductDto.getQuantity())
@@ -111,11 +125,19 @@ public class CartProductServiceImpl implements CartProductService {
                 .imageUrl(cartProductDto.getImageUrl())
                 .cart(cart)
                 .build();
+        return cartProduct;
+    }
 
-        CartProduct savedCartProduct = cartProductRepository.save(cartProduct);
-        cartProductDto.setCartProductId(savedCartProduct.getCartProductId());
-        cartProductDto.setCart(cartProduct.getCart());
-
-        return cartProductDto;
+    public CartProduct createCartProductFromDto(CartProductDto cartProductDto) {
+        CartProduct cartProduct = CartProduct.builder()
+                .product(cartProductDto.getProduct())
+                .quantity(cartProductDto.getQuantity())
+                .name(cartProductDto.getName())
+                .description(cartProductDto.getDescription())
+                .unitPrice(cartProductDto.getUnitPrice())
+                .imageUrl(cartProductDto.getImageUrl())
+                .cart(cartProductDto.getCart())
+                .build();
+        return cartProduct;
     }
 }
