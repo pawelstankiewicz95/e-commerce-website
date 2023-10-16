@@ -123,27 +123,56 @@ public class CartProductServiceTest {
 
         @Test
         void shouldIncreaseQuantityWhenProductHasEnoughUnitsInStock() {
+            Long cartProductId = cartProduct.getCartProductId();
+
             product.setUnitsInStock(10);
             cartProduct.setQuantity(9);
-            when(cartProductRepository.findById(cartProduct.getCartProductId())).thenReturn(Optional.ofNullable(cartProduct));
-            when(productRepository.findById(cartProduct.getProduct().getId())).thenReturn(Optional.ofNullable(product));
-            when(cartProductRepository.increaseCartProductQuantityByOne(cartProduct.getCartProductId())).thenReturn(1);
+            when(cartProductRepository.findById(cartProductId)).thenReturn(Optional.ofNullable(cartProduct));
+            when(productRepository.findById(cartProductId)).thenReturn(Optional.ofNullable(product));
+            when(cartProductRepository.increaseCartProductQuantityByOne(cartProductId)).thenReturn(1);
 
-            Integer updatedRows = cartProductService.increaseCartProductQuantityByOne(cartProduct.getCartProductId());
+            Integer updatedRows = cartProductService.increaseCartProductQuantityByOne(cartProductId);
 
             assertEquals(1, updatedRows);
         }
 
         @Test
         void shouldThrowExceptionWhenProductHasNotGotEnoughUnitsInStock() {
+            Long cartProductId = cartProduct.getCartProductId();
+
             product.setUnitsInStock(10);
             cartProduct.setQuantity(10);
-            when(cartProductRepository.findById(cartProduct.getCartProductId())).thenReturn(Optional.ofNullable(cartProduct));
-            when(productRepository.findById(cartProduct.getProduct().getId())).thenReturn(Optional.ofNullable(product));
+            when(cartProductRepository.findById(cartProductId)).thenReturn(Optional.ofNullable(cartProduct));
+            when(productRepository.findById(cartProductId)).thenReturn(Optional.ofNullable(product));
 
-            assertThrows(IllegalStateException.class, () -> cartProductService.increaseCartProductQuantityByOne(cartProduct.getCartProductId()));
+            assertThrows(IllegalStateException.class, () -> cartProductService.increaseCartProductQuantityByOne(cartProductId));
         }
     }
 
+    @Nested
+    class DecreaseCartProductQuantityByOneTests {
 
+        @Test
+        void shouldDecreaseWhenQuantityIsHigherThanZero() {
+            Long cartProductId = cartProduct.getCartProductId();
+
+            cartProduct.setQuantity(10);
+            when(cartProductRepository.findById(cartProductId)).thenReturn(Optional.ofNullable(cartProduct));
+            when(cartProductRepository.decreaseCartProductQuantityByOne(cartProductId)).thenReturn(1);
+
+            Integer updatedRows = cartProductService.decreaseCartProductQuantityByOne(cartProductId);
+
+            assertEquals(1, updatedRows);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenQuantityIsLowerThanOne() {
+            Long cartProductId = cartProduct.getCartProductId();
+
+            cartProduct.setQuantity(0);
+            when(cartProductRepository.findById(cartProductId)).thenReturn(Optional.ofNullable(cartProduct));
+
+            assertThrows(IllegalStateException.class, () -> cartProductService.decreaseCartProductQuantityByOne(cartProductId));
+        }
+    }
 }
