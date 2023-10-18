@@ -232,7 +232,16 @@ public class CartProductServiceTest {
 
     @Test
     void shouldUpdateCartProduct() {
+        cartProduct1.setCartProductId(1L);
 
+        when(cartProductRepository.save(cartProduct1)).thenReturn(cartProduct1);
+
+        CartProduct updatedCartProduct = cartProductService.updateCartProduct(cartProduct1);
+
+        assertNotNull(updatedCartProduct);
+        assertEquals(cartProduct1.getCartProductId(), updatedCartProduct.getCartProductId());
+
+        verify(cartProductRepository).save(cartProduct1);
     }
 
 
