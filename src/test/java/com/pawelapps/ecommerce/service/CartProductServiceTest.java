@@ -5,6 +5,7 @@ import com.pawelapps.ecommerce.dao.CartRepository;
 import com.pawelapps.ecommerce.dao.ProductRepository;
 import com.pawelapps.ecommerce.dto.CartProductDto;
 import com.pawelapps.ecommerce.entity.*;
+import com.pawelapps.ecommerce.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -19,8 +20,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 public class CartProductServiceTest {
@@ -250,12 +250,26 @@ public class CartProductServiceTest {
 
         @Test
         void shouldGetCartProductById() {
+            Long cartProductId = cartProduct1.getCartProductId();
 
+            when(cartProductRepository.findById(cartProductId)).thenReturn(Optional.of(cartProduct1));
+
+            CartProduct receivedCartProduct = cartProductService.getCartProductById(cartProductId);
+
+            assertNotNull(receivedCartProduct);
+
+            verify(cartProductRepository).findById(cartProductId);
         }
 
         @Test
         void shouldThrowNotFoundExceptionWhenCartProductDoesNotExist() {
+            Long notExistingId = 999999L;
 
+            when(cartProductRepository.findById(notExistingId)).thenReturn(Optional.empty());
+
+            assertThrows(NotFoundException.class, () -> cartProductService.getCartProductById(notExistingId));
+
+            verify(cartProductRepository).findById(notExistingId);
         }
     }
 
