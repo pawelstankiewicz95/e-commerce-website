@@ -273,5 +273,21 @@ public class CartProductServiceTest {
         }
     }
 
+    @Test
+    void shouldDeleteCartProduct() {
+        Long cartProductId = cartProduct1.getCartProductId();
+
+        cartProductService.deleteCartProduct(cartProductId);
+
+        verify(cartProductRepository).deleteCartProduct(cartProductId);
+    }
+
+    @Test
+    void shouldDeleteAllCartProducts() {
+        cartProductService.deleteAllCartProductsByUserEmail(userEmail);
+
+        verify(cartProductRepository).deleteAllCartProductsByUserEmail(userEmail);
+    }
+
 
 }
