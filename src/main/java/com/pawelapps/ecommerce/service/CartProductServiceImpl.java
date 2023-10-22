@@ -74,7 +74,7 @@ public class CartProductServiceImpl implements CartProductService {
     public Integer decreaseCartProductQuantityByOne(Long id) {
         Integer updatedRows;
         CartProduct cartProduct = cartProductRepository.findById(id).orElseThrow(() -> new NotFoundException("Product with id " + id + " doesn't exist"));
-        if (cartProduct.getQuantity() != 0) {
+        if (cartProduct.getQuantity() > 0) {
             updatedRows = cartProductRepository.decreaseCartProductQuantityByOne(id);
         } else {
             throw new IllegalStateException("Value can not be lower than 0");
@@ -114,6 +114,7 @@ public class CartProductServiceImpl implements CartProductService {
 
         CartProduct savedCartProduct = cartProductRepository.save(cartProduct);
         cartProductDto.setCartProductId(savedCartProduct.getCartProductId());
+        cartProductDto.setCart(cartProduct.getCart());
 
         return cartProductDto;
     }
