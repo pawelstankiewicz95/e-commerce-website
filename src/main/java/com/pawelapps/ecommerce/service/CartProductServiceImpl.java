@@ -38,6 +38,7 @@ public class CartProductServiceImpl implements CartProductService {
 
     @Override
     public CartProduct saveCartProduct(CartProduct cartProduct) {
+        cartProduct.setCartProductId(null);
         return this.cartProductRepository.save(cartProduct);
     }
 
